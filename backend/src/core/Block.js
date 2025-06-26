@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const Logger = require("../utils/Logger");
 
 class Block {
   constructor(timestamp, transactions, previousHash = "") {
@@ -33,7 +34,7 @@ class Block {
       this.hash = this.calculateHash();
     }
 
-    console.log(`Block mined: ${this.hash}`);
+    Logger.info(`Block mined: ${this.hash}`);
   }
 
   isValid() {

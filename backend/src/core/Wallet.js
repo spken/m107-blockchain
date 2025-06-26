@@ -1,5 +1,8 @@
 const EC = require("elliptic").ec;
 const ec = new EC("secp256k1");
+const crypto = require("crypto");
+const { v4: uuidv4 } = require("uuid");
+const Logger = require("../utils/Logger");
 
 class Wallet {
   constructor() {
@@ -26,12 +29,12 @@ class Wallet {
   }
 
   signTransaction(transaction) {
-    console.log(
+    Logger.log(
       "DEBUG wallet: transaction.fromAddress:",
       transaction.fromAddress,
     );
-    console.log("DEBUG wallet: this.publicKey:", this.publicKey);
-    console.log(
+    Logger.log("DEBUG wallet: this.publicKey:", this.publicKey);
+    Logger.log(
       "DEBUG wallet: Gleich?",
       transaction.fromAddress === this.publicKey,
     );

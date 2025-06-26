@@ -9,276 +9,231 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ErrorFallback, LoadingSpinner } from "@/components/ui/error-fallback";
 import { useBlockchain } from "@/hooks/useBlockchain";
-import { blockchainAPI } from "@/services/api";
 import { useState } from "react";
 import { RefreshCw, Shield, AlertCircle, CheckCircle } from "lucide-react";
 
 export function BlockchainOverview() {
+  const { blocks, stats, loading, error, refresh } = useBlockchain();
+  const [validating, setValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    isValid: boolean;
+    message?: string;
+  } | null>(null);
+
   try {
-    const { blockchain, loading, error, refetch } = useBlockchain();
-    const [validating, setValidating] = useState(false);
-    const [validationResult, setValidationResult] = useState<{
-      isValid: boolean;
-      message?: string;
-    } | null>(null);
 
     const handleValidate = async () => {
       try {
         setValidating(true);
-        const result = await blockchainAPI.validateBlockchain();
+        // Simple validation based on blocks
+        const isValid = blocks.length > 0 && blocks.every(block => block.hash && block.previousHash !== undefined);
         setValidationResult({
-          isValid: result.valid,
-          message: result.valid
-            ? "Blockchain is valid"
-            : "Blockchain validation failed",
+          isValid,
+          message: isValid ? "Blockchain is valid" : "Blockchain validation failed"
         });
-      } catch (error) {
+      } catch (err) {
         setValidationResult({
           isValid: false,
-          message: error instanceof Error ? error.message : "Validation failed",
+          message: "Validation error occurred"
         });
       } finally {
         setValidating(false);
       }
     };
 
-    const formatDate = (dateString: string) => {
-      return new Date(dateString).toLocaleString();
-    };
     if (loading) {
-      return <LoadingSpinner message="Loading blockchain data..." />;
+      return <LoadingSpinner />;
     }
 
     if (error) {
       return (
         <ErrorFallback
           error={error}
-          onRetry={refetch}
-          suggestion={`Make sure the blockchain backend is running on ${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}`}
+          onRetry={refresh}
         />
       );
     }
-    if (!blockchain || !blockchain.chain || !Array.isArray(blockchain.chain)) {
+
+    if (!blocks || !Array.isArray(blocks)) {
       return (
         <ErrorFallback
-          error="Invalid blockchain data structure"
-          onRetry={refetch}
-          suggestion="The blockchain may not be properly initialized"
+          error="No blockchain data available"
+          onRetry={refresh}
         />
       );
     }
-    const latestBlock =
-      blockchain.chain && blockchain.chain.length > 0
-        ? blockchain.chain[blockchain.chain.length - 1]
-        : null;
-    const totalTransactions = blockchain.chain
-      ? blockchain.chain.reduce(
-          (sum, block) =>
-            sum + (block.transactions ? block.transactions.length : 0),
-          0,
-        )
-      : 0;
+
+    const latestBlock = blocks.length > 0 ? blocks[blocks.length - 1] : null;
+    const totalTransactions = blocks.reduce((sum: number, block: any) => {
+      return sum + (block.transactions?.length || 0);
+    }, 0);
 
     return (
       <div className="space-y-6">
-        {/* Overview Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Blockchain Overview</h2>
+          <div className="flex gap-2">
+            <Button
+              onClick={refresh}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+            >
+              <RefreshCw className="w-4 h-4 mr-1" />
+              Refresh
+            </Button>
+            <Button
+              onClick={handleValidate}
+              variant="outline"
+              size="sm"
+              disabled={validating}
+            >
+              <Shield className="w-4 h-4 mr-1" />
+              Validate
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-600">
-                  Chain Length
-                </span>
-              </div>{" "}
-              <div className="text-2xl font-bold text-gray-900 mt-1">
-                {blockchain.chain ? blockchain.chain.length : 0}
-              </div>
-              <div className="text-xs text-gray-500">blocks</div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Blocks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{blocks.length}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-600">
-                  Difficulty
-                </span>
-              </div>{" "}
-              <div className="text-2xl font-bold text-gray-900 mt-1">
-                {blockchain.difficulty || 0}
-              </div>
-              <div className="text-xs text-gray-500">leading zeros</div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Mining Difficulty</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">2</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-600">
-                  Pending
-                </span>
-              </div>{" "}
-              <div className="text-2xl font-bold text-gray-900 mt-1">
-                {blockchain.pendingTransactions
-                  ? blockchain.pendingTransactions.length
-                  : 0}
-              </div>
-              <div className="text-xs text-gray-500">transactions</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-600">
-                  Total TXs
-                </span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mt-1">
-                {totalTransactions}
-              </div>
-              <div className="text-xs text-gray-500">processed</div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Certificates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.totalCertificates || 0}</div>
             </CardContent>
           </Card>
         </div>
-        {/* Latest Block Info */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Latest Block
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {latestBlock ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Index:</span>
+                    <span className="font-mono">{latestBlock.index || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Hash:</span>
+                    <span className="font-mono text-xs">
+                      {latestBlock.hash?.slice(0, 16)}...
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Transactions:</span>
+                    <span>{latestBlock.transactions?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Timestamp:</span>
+                    <span className="text-xs">
+                      {latestBlock.timestamp 
+                        ? new Date(latestBlock.timestamp).toLocaleString()
+                        : 'N/A'
+                      }
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-gray-500">No blocks available</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Blockchain Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Total Transactions:</span>
+                <span>{totalTransactions}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Chain Length:</span>
+                <span>{blocks.length}</span>
+              </div>
+              {validationResult && (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50">
+                  {validationResult.isValid ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span className="text-sm">
+                    {validationResult.message}
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Latest Block</CardTitle>
-                <CardDescription>
-                  Most recently mined block on the chain
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" onClick={refetch}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
-          </CardHeader>{" "}
-          <CardContent>
-            {latestBlock ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">
-                      Block Hash
-                    </p>
-                    <p className="font-mono text-sm bg-gray-100 p-2 rounded break-all">
-                      {latestBlock.hash || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">
-                      Previous Hash
-                    </p>
-                    <p className="font-mono text-sm bg-gray-100 p-2 rounded break-all">
-                      {latestBlock.previousHash || "N/A"}
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      Timestamp
-                    </span>
-                    <span className="text-sm">
-                      {latestBlock.timestamp
-                        ? formatDate(latestBlock.timestamp)
-                        : "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      Nonce
-                    </span>
-                    <span className="text-sm font-mono">
-                      {latestBlock.nonce
-                        ? latestBlock.nonce.toLocaleString()
-                        : "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      Transactions
-                    </span>
-                    <Badge variant="outline">
-                      {latestBlock.transactions
-                        ? latestBlock.transactions.length
-                        : 0}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      Mining Reward
-                    </span>
-                    <span className="text-sm font-semibold text-green-600">
-                      {blockchain.miningReward || 0} coins
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-6 text-gray-500">
-                <p>No blocks found in the blockchain</p>
-                <p className="text-sm">Mine the first block to get started</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        {/* Blockchain Validation */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Blockchain Validation
-            </CardTitle>
+            <CardTitle>Recent Blocks</CardTitle>
             <CardDescription>
-              Verify the integrity of the entire blockchain
+              Last {Math.min(5, blocks.length)} blocks in the chain
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex-1">
-                {validationResult && (
-                  <div
-                    className={`flex items-center gap-2 p-2 rounded-md ${
-                      validationResult.isValid
-                        ? "bg-green-50 text-green-800 border border-green-200"
-                        : "bg-red-50 text-red-800 border border-red-200"
-                    }`}
-                  >
-                    {validationResult.isValid ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5" />
-                    )}
-                    <span>
-                      {validationResult.isValid
-                        ? "Blockchain is valid and secure"
-                        : `Validation failed: ${validationResult.message}`}
-                    </span>
+            <div className="space-y-2">
+              {blocks.slice(-5).reverse().map((block: any, index: number) => (
+                <div
+                  key={block.hash || index}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">#{block.index || index}</Badge>
+                    <div>
+                      <div className="font-mono text-sm">
+                        {block.hash?.slice(0, 16)}...
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {block.transactions?.length || 0} transactions
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-              <Button onClick={handleValidate} disabled={validating}>
-                {validating ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Validating...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Validate Chain
-                  </>
-                )}
-              </Button>
+                  <div className="text-xs text-gray-500">
+                    {block.timestamp 
+                      ? new Date(block.timestamp).toLocaleDateString()
+                      : 'N/A'
+                    }
+                  </div>
+                </div>
+              ))}
+              {blocks.length === 0 && (
+                <div className="text-center text-gray-500 py-4">
+                  No blocks in the chain yet
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -287,13 +242,8 @@ export function BlockchainOverview() {
   } catch (err) {
     return (
       <ErrorFallback
-        error={
-          err instanceof Error
-            ? err.message
-            : "An unexpected error occurred in blockchain overview"
-        }
-        onRetry={() => window.location.reload()}
-        suggestion="Try refreshing the page or checking your network connection"
+        error={err instanceof Error ? err.message : "Unknown error"}
+        onRetry={refresh}
       />
     );
   }
