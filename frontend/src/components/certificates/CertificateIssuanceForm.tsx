@@ -8,9 +8,13 @@ import {
   Save, 
   X,
   AlertCircle,
-  Plus
+  Plus,
+  Wallet,
+  Building
 } from 'lucide-react';
 import type { CertificateFormData, CertificateType, CertificateFormErrors } from '@/types/certificates';
+import { useWallets } from '@/hooks/useWallets';
+import { useInstitution } from '@/hooks/useBlockchain';
 
 interface CertificateIssuanceFormProps {
   onSubmit: (data: CertificateFormData) => Promise<void>;
@@ -30,6 +34,7 @@ const CertificateIssuanceForm: React.FC<CertificateIssuanceFormProps> = ({
   const [formData, setFormData] = useState<CertificateFormData>({
     recipientName: initialData.recipientName || '',
     recipientId: initialData.recipientId || '',
+    recipientWalletAddress: initialData.recipientWalletAddress || '',
     certificateType: initialData.certificateType || 'CERTIFICATION',
     courseName: initialData.courseName || '',
     completionDate: initialData.completionDate || '',
@@ -51,11 +56,27 @@ const CertificateIssuanceForm: React.FC<CertificateIssuanceFormProps> = ({
     { value: 'PROFESSIONAL', label: 'Professional Certificate' },
   ];
 
+  // Hooks
+  const { wallets } = useWallets();
+  const { institution } = useInstitution();
+  
+  // Filter to get only individual wallets for recipient selection
+  const recipientWallets = wallets.filter(wallet => wallet.type !== 'INSTITUTION');
+
   const handleInputChange = (field: keyof CertificateFormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+      
+      // Automatically sync recipientId with recipientWalletAddress
+      if (field === 'recipientWalletAddress') {
+        updated.recipientId = value;
+      }
+      
+      return updated;
+    });
   };
 
   const handleAddMetadata = () => {
@@ -115,11 +136,34 @@ const CertificateIssuanceForm: React.FC<CertificateIssuanceFormProps> = ({
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Issuer Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold border-b pb-2">Issuing Institution</h3>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                <div className="flex items-center gap-2">
+                  <Building className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-blue-900">
+                      {institution?.name || 'Unknown Institution'}
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      {institution?.type || 'Institution Type Unknown'}
+                    </p>
+                    {institution?.publicKey && (
+                      <p className="text-xs text-blue-600 font-mono mt-1">
+                        {institution.publicKey.slice(0, 20)}...
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Step 1: Recipient Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Recipient Information</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label htmlFor="recipientName" className="block text-sm font-medium mb-2">
                     Recipient Name *
@@ -140,27 +184,61 @@ const CertificateIssuanceForm: React.FC<CertificateIssuanceFormProps> = ({
                     </p>
                   )}
                 </div>
+              </div>
+              
+              {/* Recipient Wallet Selection */}
+              <div className="col-span-full">
+                <label htmlFor="recipientWalletAddress" className="block text-sm font-medium mb-2">
+                  <Wallet className="inline h-4 w-4 mr-1" />
+                  Recipient Wallet *
+                </label>
                 
-                <div>
-                  <label htmlFor="recipientId" className="block text-sm font-medium mb-2">
-                    Student/Recipient ID *
-                  </label>
-                  <Input
-                    id="recipientId"
-                    type="text"
-                    value={formData.recipientId}
-                    onChange={(e) => handleInputChange('recipientId', e.target.value)}
-                    placeholder="e.g., STU123456"
-                    className={hasError('recipientId') ? 'border-red-500' : ''}
-                    required
-                  />
-                  {hasError('recipientId') && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {getFieldError('recipientId')}
+                {recipientWallets.length > 0 ? (
+                  <div className="space-y-2">
+                    <select
+                      id="recipientWalletAddress"
+                      value={formData.recipientWalletAddress}
+                      onChange={(e) => handleInputChange('recipientWalletAddress', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-md bg-white ${hasError('recipientWalletAddress') ? 'border-red-500' : 'border-gray-300'}`}
+                      required
+                    >
+                      <option value="">Select a recipient wallet...</option>
+                      {recipientWallets.map((wallet) => (
+                        <option key={wallet.id} value={wallet.publicKey}>
+                          {wallet.label} ({wallet.publicKey.slice(0, 15)}...)
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-sm text-gray-600">
+                      Select from available wallets or enter a custom address below
                     </p>
-                  )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 mb-2">
+                    No recipient wallets found. You can enter a custom wallet address below.
+                  </p>
+                )}
+                
+                {/* Manual wallet address input as fallback */}
+                <div className="mt-2">
+                  <Input
+                    type="text"
+                    value={formData.recipientWalletAddress}
+                    onChange={(e) => handleInputChange('recipientWalletAddress', e.target.value)}
+                    placeholder="Or enter custom wallet public key address"
+                    className={hasError('recipientWalletAddress') ? 'border-red-500' : ''}
+                  />
                 </div>
+                
+                {hasError('recipientWalletAddress') && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {getFieldError('recipientWalletAddress')}
+                  </p>
+                )}
+                <p className="text-sm text-gray-600 mt-1">
+                  The certificate will be issued to this wallet address
+                </p>
               </div>
             </div>
 

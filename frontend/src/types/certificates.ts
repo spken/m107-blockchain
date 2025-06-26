@@ -123,6 +123,7 @@ export interface NetworkStatus {
 export interface CertificateFormData {
   recipientName: string;
   recipientId: string;
+  recipientWalletAddress: string;
   certificateType: CertificateType;
   courseName: string;
   completionDate: string;
@@ -297,3 +298,82 @@ export interface InstitutionPermissions {
 export type CertificateFieldKey = keyof Certificate;
 export type InstitutionFieldKey = keyof Institution;
 export type TransactionFieldKey = keyof CertificateTransaction;
+
+// Wallet types
+export interface Wallet {
+  id: string;
+  label: string;
+  publicKey: string;
+  privateKey?: string; // Only available for owned wallets
+  certificateCount: number;
+  type?: WalletType;
+  created: string;
+}
+
+export type WalletType = 
+  | "INSTITUTION"
+  | "INDIVIDUAL"
+  | "AUTHORITY";
+
+export interface WalletDetails extends Wallet {
+  certificates: Certificate[];
+  transactions: WalletTransaction[];
+  isInstitution: boolean;
+}
+
+export interface WalletTransaction {
+  id: string;
+  fromAddress: string;
+  toAddress: string;
+  amount: number;
+  fee: number;
+  timestamp: string;
+  type: 'SENT' | 'RECEIVED';
+  status?: 'PENDING' | 'CONFIRMED';
+  blockHash?: string;
+  blockIndex?: number;
+  blockTimestamp?: string;
+  payload?: any;
+}
+
+// Wallet API response types
+export interface WalletApiResponse {
+  success: boolean;
+  wallet?: Wallet;
+  message?: string;
+}
+
+export interface WalletsApiResponse {
+  success: boolean;
+  wallets: Wallet[];
+}
+
+export interface WalletDetailsApiResponse {
+  success: boolean;
+  wallet: WalletDetails;
+}
+
+export interface WalletCertificatesApiResponse {
+  success: boolean;
+  certificates: Certificate[];
+  count: number;
+}
+
+export interface WalletTransactionsApiResponse {
+  success: boolean;
+  transactions: WalletTransaction[];
+}
+
+// Wallet hook state
+export interface UseWalletsState {
+  wallets: Wallet[];
+  selectedWallet: Wallet | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface UseWalletDetailsState {
+  wallet: WalletDetails | null;
+  loading: boolean;
+  error: string | null;
+}

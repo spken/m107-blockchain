@@ -22,6 +22,11 @@ class CertificateBlockchain {
     this.revokedCertificates = new Set(); // Set of revoked certificate IDs
     this.verificationHistory = new Map(); // certificateId -> verification records
     
+    // Wallet-specific data structures
+    this.walletCertificates = new Map(); // walletAddress -> Set of certificate IDs
+    this.walletIssuedCertificates = new Map(); // walletAddress -> Set of certificate IDs (as issuer)
+    this.walletReceivedCertificates = new Map(); // walletAddress -> Set of certificate IDs (as recipient)
+    
     // Proof of Authority settings
     this.authorizedValidators = new Set(); // Authorized institution addresses
     this.consensusThreshold = 2; // 2 out of 3 validators required
@@ -149,6 +154,39 @@ class CertificateBlockchain {
     // Store certificate
     this.certificates.set(certificate.id, certificate);
     
+    // Track wallet ownership of certificates
+    const issuerWallet = certificate.institutionPublicKey;
+    const recipientWallet = transaction.payload.recipientWalletAddress || 
+                           (certificate.metadata && certificate.metadata.recipientWalletAddress);
+    
+    // Track issued certificates for the issuer wallet (institution)
+    if (issuerWallet) {
+      if (!this.walletIssuedCertificates.has(issuerWallet)) {
+        this.walletIssuedCertificates.set(issuerWallet, new Set());
+      }
+      this.walletIssuedCertificates.get(issuerWallet).add(certificate.id);
+      
+      // Also add to general wallet certificates map
+      if (!this.walletCertificates.has(issuerWallet)) {
+        this.walletCertificates.set(issuerWallet, new Set());
+      }
+      this.walletCertificates.get(issuerWallet).add(certificate.id);
+    }
+    
+    // Track received certificates for the recipient wallet
+    if (recipientWallet && recipientWallet !== issuerWallet) {
+      if (!this.walletReceivedCertificates.has(recipientWallet)) {
+        this.walletReceivedCertificates.set(recipientWallet, new Set());
+      }
+      this.walletReceivedCertificates.get(recipientWallet).add(certificate.id);
+      
+      // Also add to general wallet certificates map
+      if (!this.walletCertificates.has(recipientWallet)) {
+        this.walletCertificates.set(recipientWallet, new Set());
+      }
+      this.walletCertificates.get(recipientWallet).add(certificate.id);
+    }
+    
     // Update institution statistics
     this.institutionRegistry.incrementCertificatesIssued(transaction.fromAddress);
   }
@@ -196,7 +234,7 @@ class CertificateBlockchain {
   /**
    * Create and add a certificate transaction
    */
-  issueCertificate(certificate, institutionPrivateKey) {
+  issueCertificate(certificate, institutionPrivateKey, recipientWalletAddress = null) {
     // Validate institution authorization
     if (!this.isAuthorizedValidator(certificate.institutionPublicKey)) {
       throw new Error("Institution is not authorized to issue certificates");
@@ -210,6 +248,11 @@ class CertificateBlockchain {
       certificate.institutionPublicKey,
       certificate
     );
+
+    // Add recipient wallet address to transaction payload if provided
+    if (recipientWalletAddress) {
+      transaction.payload.recipientWalletAddress = recipientWalletAddress;
+    }
 
     // Sign transaction
     const EC = require("elliptic").ec;
@@ -242,108 +285,58 @@ class CertificateBlockchain {
   }
 
   /**
+   * Get all certificates
+   */
+  getAllCertificates() {
+    return Array.from(this.certificates.values());
+  }
+
+  /**
    * Get certificate by ID
    */
-  getCertificate(certificateId) {
+  getCertificateById(certificateId) {
     return this.certificates.get(certificateId);
   }
 
   /**
-   * Verify certificate authenticity
+   * Search certificates by various criteria
    */
-  verifyCertificate(certificateId) {
-    const certificate = this.certificates.get(certificateId);
+  searchCertificates(criteria = {}) {
+    const allCertificates = this.getAllCertificates();
     
-    if (!certificate) {
-      return {
-        valid: false,
-        status: "NOT_FOUND",
-        message: "Certificate not found on blockchain"
-      };
-    }
-
-    if (this.revokedCertificates.has(certificateId)) {
-      return {
-        valid: false,
-        status: "REVOKED",
-        message: "Certificate has been revoked",
-        certificate
-      };
-    }
-
-    if (certificate.isExpired()) {
-      return {
-        valid: false,
-        status: "EXPIRED",
-        message: "Certificate has expired",
-        certificate
-      };
-    }
-
-    try {
-      const isSignatureValid = certificate.isValid();
-      const isInstitutionAuthorized = this.isAuthorizedValidator(certificate.institutionPublicKey);
-
-      if (isSignatureValid && isInstitutionAuthorized) {
-        return {
-          valid: true,
-          status: "VALID",
-          message: "Certificate is valid and authentic",
-          certificate
-        };
-      } else {
-        return {
-          valid: false,
-          status: "INVALID",
-          message: "Certificate signature invalid or institution not authorized",
-          certificate
-        };
+    return allCertificates.filter(cert => {
+      // Filter by recipient name
+      if (criteria.recipientName && !cert.recipientName.toLowerCase().includes(criteria.recipientName.toLowerCase())) {
+        return false;
       }
-    } catch (error) {
-      return {
-        valid: false,
-        status: "ERROR",
-        message: "Error verifying certificate: " + error.message,
-        certificate
-      };
-    }
-  }
-
-  /**
-   * Get all certificates issued by an institution
-   */
-  getCertificatesByInstitution(institutionPublicKey) {
-    return Array.from(this.certificates.values())
-      .filter(cert => cert.institutionPublicKey === institutionPublicKey);
-  }
-
-  /**
-   * Get all certificates for a recipient
-   */
-  getCertificatesByRecipient(recipientId) {
-    return Array.from(this.certificates.values())
-      .filter(cert => cert.recipientId === recipientId);
-  }
-
-  /**
-   * Get verification history for a certificate
-   */
-  getCertificateVerificationHistory(certificateId) {
-    return this.verificationHistory.get(certificateId) || [];
-  }
-
-  /**
-   * Search certificates
-   */
-  searchCertificates(query) {
-    const searchTerm = query.toLowerCase();
-    return Array.from(this.certificates.values())
-      .filter(cert => 
-        cert.recipientName.toLowerCase().includes(searchTerm) ||
-        cert.institutionName.toLowerCase().includes(searchTerm) ||
-        cert.courseName.toLowerCase().includes(searchTerm) ||
-        cert.certificateType.toLowerCase().includes(searchTerm)
-      );
+      
+      // Filter by institution
+      if (criteria.institutionName && !cert.institutionName.toLowerCase().includes(criteria.institutionName.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by institution public key
+      if (criteria.institutionPublicKey && cert.institutionPublicKey !== criteria.institutionPublicKey) {
+        return false;
+      }
+      
+      // Filter by recipient ID
+      if (criteria.recipientId && cert.recipientId !== criteria.recipientId) {
+        return false;
+      }
+      
+      // Filter by certificate type
+      if (criteria.certificateType && cert.certificateType !== criteria.certificateType) {
+        return false;
+      }
+      
+      // Filter by course name
+      if (criteria.courseName && !cert.courseName.toLowerCase().includes(criteria.courseName.toLowerCase())) {
+        return false;
+      }
+      
+      return true;
+    });
   }
 
   /**
@@ -426,6 +419,53 @@ class CertificateBlockchain {
   }
 
   /**
+   * Rebuild wallet data structures from the entire blockchain
+   * Useful for ensuring data consistency after blockchain operations
+   */
+  rebuildWalletData() {
+    // Clear existing wallet data
+    this.walletCertificates.clear();
+    this.walletIssuedCertificates.clear();
+    this.walletReceivedCertificates.clear();
+    
+    // Rebuild from all certificates
+    for (const certificate of this.certificates.values()) {
+      if (!certificate || !certificate.id) continue;
+      
+      const issuerWallet = certificate.institutionPublicKey;
+      const recipientWallet = certificate.metadata && certificate.metadata.recipientWalletAddress;
+      
+      // Track issued certificates for the issuer wallet (institution)
+      if (issuerWallet) {
+        if (!this.walletIssuedCertificates.has(issuerWallet)) {
+          this.walletIssuedCertificates.set(issuerWallet, new Set());
+        }
+        this.walletIssuedCertificates.get(issuerWallet).add(certificate.id);
+        
+        // Also add to general wallet certificates map
+        if (!this.walletCertificates.has(issuerWallet)) {
+          this.walletCertificates.set(issuerWallet, new Set());
+        }
+        this.walletCertificates.get(issuerWallet).add(certificate.id);
+      }
+      
+      // Track received certificates for the recipient wallet
+      if (recipientWallet && recipientWallet !== issuerWallet) {
+        if (!this.walletReceivedCertificates.has(recipientWallet)) {
+          this.walletReceivedCertificates.set(recipientWallet, new Set());
+        }
+        this.walletReceivedCertificates.get(recipientWallet).add(certificate.id);
+        
+        // Also add to general wallet certificates map
+        if (!this.walletCertificates.has(recipientWallet)) {
+          this.walletCertificates.set(recipientWallet, new Set());
+        }
+        this.walletCertificates.get(recipientWallet).add(certificate.id);
+      }
+    }
+  }
+
+  /**
    * Get all blocks
    */
   getAllBlocks() {
@@ -444,6 +484,72 @@ class CertificateBlockchain {
    */
   getBlockByHash(hash) {
     return this.chain.find(block => block.hash === hash);
+  }
+
+  /**
+   * Get certificates owned by a wallet (both issued and received)
+   */
+  getWalletCertificates(walletAddress) {
+    const certificateIds = this.walletCertificates.get(walletAddress) || new Set();
+    const certificates = [];
+    
+    for (const certId of certificateIds) {
+      const certificate = this.certificates.get(certId);
+      if (certificate) {
+        certificates.push(certificate);
+      }
+    }
+    
+    return certificates;
+  }
+
+  /**
+   * Get certificates issued by a wallet (institution)
+   */
+  getWalletIssuedCertificates(walletAddress) {
+    const certificateIds = this.walletIssuedCertificates.get(walletAddress) || new Set();
+    const certificates = [];
+    
+    for (const certId of certificateIds) {
+      const certificate = this.certificates.get(certId);
+      if (certificate) {
+        certificates.push(certificate);
+      }
+    }
+    
+    return certificates;
+  }
+
+  /**
+   * Get certificates received by a wallet
+   */
+  getWalletReceivedCertificates(walletAddress) {
+    const certificateIds = this.walletReceivedCertificates.get(walletAddress) || new Set();
+    const certificates = [];
+    
+    for (const certId of certificateIds) {
+      const certificate = this.certificates.get(certId);
+      if (certificate) {
+        certificates.push(certificate);
+      }
+    }
+    
+    return certificates;
+  }
+
+  /**
+   * Get wallet certificate statistics
+   */
+  getWalletStats(walletAddress) {
+    const issuedCount = (this.walletIssuedCertificates.get(walletAddress) || new Set()).size;
+    const receivedCount = (this.walletReceivedCertificates.get(walletAddress) || new Set()).size;
+    const totalCount = (this.walletCertificates.get(walletAddress) || new Set()).size;
+    
+    return {
+      totalCertificates: totalCount,
+      issuedCertificates: issuedCount,
+      receivedCertificates: receivedCount
+    };
   }
 }
 

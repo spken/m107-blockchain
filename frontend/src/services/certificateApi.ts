@@ -10,7 +10,12 @@ import type {
   BlockApiResponse,
   ConsensusResponse,
   CertificateSearchParams,
-  CertificateTransaction
+  CertificateTransaction,
+  WalletApiResponse,
+  WalletsApiResponse,
+  WalletDetailsApiResponse,
+  WalletCertificatesApiResponse,
+  WalletTransactionsApiResponse
 } from '@/types/certificates';
 
 const API_BASE_URL = 'http://localhost:3001';
@@ -245,6 +250,46 @@ class CertificateAPI {
     return this.fetchAPI<ConsensusResponse>('/consensus');
   }
 
+  // ==================== WALLET ENDPOINTS ====================
+
+  /**
+   * Create a new wallet
+   */
+  async createWallet(label?: string): Promise<WalletApiResponse> {
+    return this.fetchAPI<WalletApiResponse>('/wallets', {
+      method: 'POST',
+      body: JSON.stringify({ label }),
+    });
+  }
+
+  /**
+   * Get all wallets
+   */
+  async getWallets(): Promise<WalletsApiResponse> {
+    return this.fetchAPI<WalletsApiResponse>('/wallets');
+  }
+
+  /**
+   * Get wallet by public key
+   */
+  async getWallet(publicKey: string): Promise<WalletDetailsApiResponse> {
+    return this.fetchAPI<WalletDetailsApiResponse>(`/wallets/${publicKey}`);
+  }
+
+  /**
+   * Get certificates owned by a wallet
+   */
+  async getWalletCertificates(publicKey: string): Promise<WalletCertificatesApiResponse> {
+    return this.fetchAPI<WalletCertificatesApiResponse>(`/wallets/${publicKey}/certificates`);
+  }
+
+  /**
+   * Get transaction history for a wallet
+   */
+  async getWalletTransactions(publicKey: string): Promise<WalletTransactionsApiResponse> {
+    return this.fetchAPI<WalletTransactionsApiResponse>(`/wallets/${publicKey}/transactions`);
+  }
+
   // ==================== UTILITY METHODS ====================
 
   /**
@@ -346,4 +391,11 @@ export const api = {
   // Health
   ping: () => certificateAPI.ping(),
   getHealth: () => certificateAPI.getHealth(),
+
+  // Wallets
+  createWallet: (label?: string) => certificateAPI.createWallet(label),
+  getWallets: () => certificateAPI.getWallets(),
+  getWallet: (publicKey: string) => certificateAPI.getWallet(publicKey),
+  getWalletCertificates: (publicKey: string) => certificateAPI.getWalletCertificates(publicKey),
+  getWalletTransactions: (publicKey: string) => certificateAPI.getWalletTransactions(publicKey),
 };

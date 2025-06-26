@@ -11,6 +11,7 @@ import CertificateViewer from "@/components/certificates/CertificateViewer";
 import { BlockchainOverview } from "@/components/BlockchainOverview";
 import { NetworkManager } from "@/components/NetworkManager";
 import MempoolViewer from "@/components/MempoolViewer";
+import WalletManager from "@/components/WalletManager";
 import {
   useBlocks,
   useInstitution,
@@ -241,26 +242,17 @@ function App() {
     searchCertificates({ q: query });
   };
 
-  const { verifyCertificate } = useCertificateVerification();
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const { verifyCertificate, verification, loading: verificationLoading, error: verificationError } = useCertificateVerification();
   const [verifyingId, setVerifyingId] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleVerifyCertificate = async (certificateId: string) => {
     if (!certificateId.trim()) return;
-    
-    setIsVerifying(true);
-    setVerificationResult(null);
-    try {
-      const result = await verifyCertificate(certificateId);
-      setVerificationResult(result);
-    } catch (error) {
-      setVerificationResult({
-        status: 'ERROR',
-        message: error instanceof Error ? error.message : 'Verification failed'
-      });
-    } finally {
-      setIsVerifying(false);
+    await verifyCertificate(certificateId);
+  };
+
+  const handleVerifySelectedCertificate = async () => {
+    if (selectedCertificate?.id) {
+      await verifyCertificate(selectedCertificate.id);
     }
   };
 
@@ -396,7 +388,7 @@ function App() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-7 mb-8">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -408,6 +400,10 @@ function App() {
             <TabsTrigger value="verify" className="flex items-center gap-2">
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Verify Certificate</span>
+            </TabsTrigger>
+            <TabsTrigger value="wallets" className="flex items-center gap-2">
+              <Award className="w-4 h-4" />
+              <span className="hidden sm:inline">Wallets</span>
             </TabsTrigger>
             <TabsTrigger value="mempool" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -529,88 +525,104 @@ function App() {
                     />
                     <Button 
                       onClick={() => handleVerifyCertificate(verifyingId)}
-                      disabled={isVerifying || !verifyingId.trim()}
+                      disabled={verificationLoading || !verifyingId.trim()}
                       className="px-6"
                     >
-                      {isVerifying ? 'Verifying...' : 'Verify'}
+                      {verificationLoading ? 'Verifying...' : 'Verify'}
                     </Button>
                   </div>
                   
-                  {verificationResult && (
+                  {verificationError && (
                     <div className="mt-6">
-                      {verificationResult.status === 'ERROR' ? (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                          <div className="flex items-center gap-2 text-red-800">
-                            <XCircle className="w-5 h-5" />
-                            <span className="font-medium">Verification Failed</span>
-                          </div>
-                          <p className="text-red-700 mt-1">{verificationResult.message}</p>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-red-800">
+                          <XCircle className="w-5 h-5" />
+                          <span className="font-medium">Verification Failed</span>
                         </div>
-                      ) : (
-                        <div className={`border rounded-lg p-4 ${
-                          verificationResult.valid 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
+                        <p className="text-red-700 mt-1">{verificationError}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {verification && (
+                    <div className="mt-6">
+                      <div className={`border rounded-lg p-4 ${
+                        verification.valid 
+                          ? 'bg-green-50 border-green-200' 
+                          : 'bg-red-50 border-red-200'
+                      }`}>
+                        <div className={`flex items-center gap-2 ${
+                          verification.valid ? 'text-green-800' : 'text-red-800'
                         }`}>
-                          <div className={`flex items-center gap-2 ${
-                            verificationResult.valid ? 'text-green-800' : 'text-red-800'
-                          }`}>
-                            {verificationResult.valid ? (
-                              <CheckCircle className="w-5 h-5" />
-                            ) : (
-                              <XCircle className="w-5 h-5" />
-                            )}
-                            <span className="font-medium">
-                              {verificationResult.valid ? 'Certificate Valid' : 'Certificate Invalid'}
-                            </span>
-                          </div>
-                          <p className={`mt-1 ${
-                            verificationResult.valid ? 'text-green-700' : 'text-red-700'
-                          }`}>
-                            {verificationResult.message || 'Verification completed'}
-                          </p>
-                          
-                          {verificationResult.certificate && (
-                            <div className="mt-4 pt-4 border-t border-gray-200">
-                              <h4 className="font-medium text-gray-900 mb-2">Certificate Details</h4>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-gray-600">Recipient:</span>
-                                  <div className="font-medium">{verificationResult.certificate.recipientName}</div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">Institution:</span>
-                                  <div className="font-medium">{verificationResult.certificate.institutionName}</div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">Course:</span>
-                                  <div className="font-medium">{verificationResult.certificate.courseName}</div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">Issue Date:</span>
-                                  <div className="font-medium">
-                                    {new Date(verificationResult.certificate.issueDate).toLocaleDateString()}
-                                  </div>
+                          {verification.valid ? (
+                            <CheckCircle className="w-5 h-5" />
+                          ) : (
+                            <XCircle className="w-5 h-5" />
+                          )}
+                          <span className="font-medium">
+                            {verification.valid ? 'Certificate Valid' : 'Certificate Invalid'}
+                          </span>
+                        </div>
+                        <p className={`mt-1 ${
+                          verification.valid ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {verification.message || 'Verification completed'}
+                        </p>
+                        
+                        {verification.certificate && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <h4 className="font-medium text-gray-900 mb-2">Certificate Details</h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Recipient:</span>
+                                <div className="font-medium">{verification.certificate.recipientName}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Institution:</span>
+                                <div className="font-medium">{verification.certificate.institutionName}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Course:</span>
+                                <div className="font-medium">{verification.certificate.courseName}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Issue Date:</span>
+                                <div className="font-medium">
+                                  {new Date(verification.certificate.issueDate).toLocaleDateString()}
                                 </div>
                               </div>
-                              <Button 
-                                className="mt-3"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedCertificate(verificationResult.certificate);
-                                  setActiveTab('dashboard');
-                                }}
-                              >
-                                View Full Details
-                              </Button>
                             </div>
-                          )}
-                        </div>
-                      )}
+                            <Button 
+                              className="mt-3"
+                              variant="outline"
+                              onClick={() => {
+                                if (verification.certificate) {
+                                  setSelectedCertificate(verification.certificate);
+                                  setActiveTab('dashboard');
+                                }
+                              }}
+                            >
+                              View Full Details
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
+            </ErrorBoundary>
+          </TabsContent>
+
+          {/* Wallets Tab */}
+          <TabsContent value="wallets" className="space-y-6">
+            <ErrorBoundary>
+              <WalletManager 
+                onSelectCertificate={(certificate) => {
+                  setSelectedCertificate(certificate);
+                  setShowCertificateModal(true);
+                }}
+              />
             </ErrorBoundary>
           </TabsContent>
 
@@ -686,6 +698,9 @@ function App() {
               </div>
               <CertificateViewer 
                 certificate={selectedCertificate}
+                verification={verification || undefined}
+                onVerify={handleVerifySelectedCertificate}
+                verifying={verificationLoading}
                 onClose={() => setShowCertificateModal(false)}
               />
             </div>

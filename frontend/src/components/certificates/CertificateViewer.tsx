@@ -186,8 +186,8 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Student ID</label>
-                  <p className="font-mono text-sm bg-gray-50 px-2 py-1 rounded border">
+                  <label className="text-sm font-medium text-gray-600">Recipient Wallet Address</label>
+                  <p className="font-mono text-sm bg-gray-50 px-2 py-1 rounded border break-all">
                     {certificate.recipientId}
                   </p>
                 </div>
@@ -367,6 +367,28 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                   {formatDate(certificate.timestamp)}
                 </p>
               </div>
+              
+              {/* Wallet Ownership Information */}
+              {certificate.metadata?.recipientWalletAddress && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Recipient Wallet Address</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="bg-green-100 px-2 py-1 rounded text-sm font-mono break-all">
+                      {certificate.metadata.recipientWalletAddress}
+                    </code>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(certificate.metadata?.recipientWalletAddress || '', 'Recipient Wallet Address')}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This certificate is assigned to the above wallet address
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -226,6 +226,7 @@ app.post("/certificates", async (req, res) => {
     const {
       recipientName,
       recipientId,
+      recipientWalletAddress,
       certificateType,
       courseName,
       completionDate,
@@ -239,10 +240,14 @@ app.post("/certificates", async (req, res) => {
       return res.status(400).json({ error: "Node is not configured as an authorized institution" });
     }
 
-    // Create certificate
+    if (!recipientWalletAddress) {
+      return res.status(400).json({ error: "Recipient wallet address is required" });
+    }
+
+    // Create certificate with issuer as the institution and recipient ID as the wallet address
     const certificate = new Certificate({
       recipientName,
-      recipientId,
+      recipientId: recipientWalletAddress, // Use wallet address as the recipient ID
       institutionName: nodeInstitution.name,
       institutionPublicKey: nodeInstitution.publicKey,
       certificateType,
@@ -263,11 +268,21 @@ app.post("/certificates", async (req, res) => {
       });
     }
 
+    // Store the recipient wallet address in certificate metadata
+    if (!certificate.metadata) {
+      certificate.metadata = {};
+    }
+    certificate.metadata.recipientWalletAddress = recipientWalletAddress;
+
     // Issue certificate (creates and signs transaction)
     const transaction = certificateBlockchain.issueCertificate(
       certificate, 
-      nodeInstitution.privateKey
+      nodeInstitution.privateKey,
+      recipientWalletAddress
     );
+
+    // Add transaction to mempool for immediate availability
+    mempool.addTransaction(transaction);
 
     // Broadcast transaction to network
     const broadcastPromises = certificateBlockchain.networkNodes.map((networkNodeUrl) => {
@@ -298,13 +313,18 @@ app.post("/certificates", async (req, res) => {
  * Get certificate by ID
  */
 app.get("/certificates/:id", (req, res) => {
-  const certificate = certificateBlockchain.getCertificate(req.params.id);
-  
-  if (!certificate) {
-    return res.status(404).json({ error: "Certificate not found" });
-  }
+  try {
+    const certificate = certificateBlockchain.getCertificateById(req.params.id);
+    
+    if (!certificate) {
+      return res.status(404).json({ error: "Certificate not found" });
+    }
 
-  res.json(certificate);
+    res.json(certificate);
+  } catch (error) {
+    Logger.log(`Error fetching certificate ${req.params.id}: ${error.message}`);
+    res.status(500).json({ error: "Failed to retrieve certificate" });
+  }
 });
 
 /**
@@ -352,23 +372,31 @@ app.post("/certificates/:id/verify", async (req, res) => {
  * Search certificates
  */
 app.get("/certificates", (req, res) => {
-  const query = req.query.q;
-  const institutionKey = req.query.institution;
-  const recipientId = req.query.recipient;
+  try {
+    const query = req.query.q;
+    const institutionKey = req.query.institution;
+    const recipientId = req.query.recipient;
 
-  let certificates;
+    let certificates = [];
 
-  if (query) {
-    certificates = certificateBlockchain.searchCertificates(query);
-  } else if (institutionKey) {
-    certificates = certificateBlockchain.getCertificatesByInstitution(institutionKey);
-  } else if (recipientId) {
-    certificates = certificateBlockchain.getCertificatesByRecipient(recipientId);
-  } else {
-    certificates = Array.from(certificateBlockchain.certificates.values());
+    if (query || institutionKey || recipientId) {
+      // Use search criteria
+      const searchCriteria = {};
+      if (query) searchCriteria.recipientName = query;
+      if (institutionKey) searchCriteria.institutionPublicKey = institutionKey;
+      if (recipientId) searchCriteria.recipientId = recipientId;
+      
+      certificates = certificateBlockchain.searchCertificates(searchCriteria);
+    } else {
+      // Get all certificates
+      certificates = certificateBlockchain.getAllCertificates() || [];
+    }
+
+    res.json(certificates);
+  } catch (error) {
+    Logger.log(`Error searching certificates: ${error.message}`);
+    res.status(500).json({ error: "Failed to search certificates" });
   }
-
-  res.json(certificates);
 });
 
 /**
@@ -620,6 +648,9 @@ app.get("/consensus", async (req, res) => {
       // Rebuild certificate registry from new chain
       certificateBlockchain.rebuildCertificateRegistry();
       
+      // Rebuild wallet data to ensure consistency
+      certificateBlockchain.rebuildWalletData();
+      
       res.json({
         note: "Blockchain replaced by consensus mechanism",
         chain: certificateBlockchain.chain
@@ -688,26 +719,285 @@ app.post("/initialize-network", async (req, res) => {
   }
 });
 
-// ==================== HELPER FUNCTIONS ====================
+// ==================== WALLET ENDPOINTS ====================
 
-/**
- * Validate blockchain chain
- */
-function isValidChain(chain) {
+// Create a new wallet
+app.post("/wallets", (req, res) => {
   try {
-    for (let i = 1; i < chain.length; i++) {
-      const currentBlock = chain[i];
-      const prevBlock = chain[i - 1];
-      
-      if (currentBlock.previousHash !== prevBlock.hash) {
-        return false;
+    const { label } = req.body;
+    const wallet = new Wallet();
+    
+    const walletResponse = {
+      id: uuidv4(),
+      label: label || "Unnamed Wallet",
+      publicKey: wallet.getPublicKey(),
+      privateKey: wallet.getPrivateKey(),
+      certificateCount: 0,
+      created: new Date().toISOString()
+    };
+    
+    Logger.log(`Created new wallet: ${walletResponse.id} (${walletResponse.label})`);
+    
+    res.json({
+      success: true,
+      wallet: walletResponse,
+      message: "Wallet created successfully"
+    });
+  } catch (error) {
+    Logger.log(`Error creating wallet: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Get all wallets with their balances and certificate counts
+app.get("/wallets", (req, res) => {
+  try {
+    // For demo purposes, we'll create some sample wallets
+    // In a real system, wallets would be stored in a database
+    const sampleWallets = [];
+    
+    // Add institution wallet if available
+    if (nodeInstitution) {
+      sampleWallets.push({
+        id: "institution-wallet",
+        label: `${nodeInstitution.name} Wallet`,
+        publicKey: nodeInstitution.publicKey,
+        certificateCount: 0,
+        type: "INSTITUTION",
+        created: new Date().toISOString()
+      });
+    }
+    
+    // Add some demo user wallets
+    sampleWallets.push({
+      id: "user-wallet-1",
+      label: "Student Wallet #1",
+      publicKey: "04a1b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      certificateCount: 0,
+      type: "INDIVIDUAL",
+      created: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+    });
+    
+    sampleWallets.push({
+      id: "user-wallet-2", 
+      label: "Graduate Wallet",
+      publicKey: "04b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1",
+      certificateCount: 0,
+      type: "INDIVIDUAL",
+      created: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+    });
+    
+    // Add certificate counts for each wallet safely
+    try {
+      const allCertificates = certificateBlockchain.getAllCertificates() || [];
+      sampleWallets.forEach(wallet => {
+        wallet.certificateCount = allCertificates.filter(cert => {
+          if (!cert) return false;
+          
+          // Count certificates issued by this wallet (institution)
+          if (cert.institutionPublicKey === wallet.publicKey) {
+            return true;
+          }
+          
+          // Count certificates assigned to this wallet address  
+          if (cert.metadata && cert.metadata.recipientWalletAddress === wallet.publicKey) {
+            return true;
+          }
+          
+          return false;
+        }).length;
+      });
+    } catch (certError) {
+      Logger.log(`Warning: Could not load certificates for wallet counts: ${certError.message}`);
+      // Continue with 0 certificate counts
+    }
+    
+    res.json({
+      success: true,
+      wallets: sampleWallets
+    });
+  } catch (error) {
+    Logger.log(`Error fetching wallets: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Get wallet by public key
+app.get("/wallets/:publicKey", (req, res) => {
+  try {
+    const { publicKey } = req.params;
+    
+    // Get certificates for this wallet safely using blockchain methods
+    let walletCertificates = [];
+    let walletStats = { totalCertificates: 0, issuedCertificates: 0, receivedCertificates: 0 };
+    
+    try {
+      // Use blockchain methods for better performance and accuracy
+      walletCertificates = certificateBlockchain.getWalletCertificates(publicKey);
+      walletStats = certificateBlockchain.getWalletStats(publicKey);
+    } catch (certError) {
+      Logger.log(`Warning: Could not load certificates for wallet ${publicKey}: ${certError.message}`);
+      // Fallback to manual search if blockchain methods fail
+      try {
+        const allCertificates = certificateBlockchain.getAllCertificates() || [];
+        walletCertificates = allCertificates.filter(cert => {
+          if (!cert) return false;
+          
+          // Include certificates issued by this wallet (institution)
+          if (cert.institutionPublicKey === publicKey) {
+            return true;
+          }
+          
+          // Include certificates assigned to this wallet address
+          if (cert.metadata && cert.metadata.recipientWalletAddress === publicKey) {
+            return true;
+          }
+          
+          return false;
+        });
+        walletStats.totalCertificates = walletCertificates.length;
+      } catch (fallbackError) {
+        Logger.log(`Warning: Fallback certificate loading also failed for wallet ${publicKey}: ${fallbackError.message}`);
       }
     }
-    return true;
+    
+    // Get transactions for this wallet
+    const allTransactions = [];
+    try {
+      certificateBlockchain.chain.forEach(block => {
+        if (block.transactions) {
+          block.transactions.forEach(tx => {
+            if (tx && (tx.fromAddress === publicKey || tx.toAddress === publicKey)) {
+              allTransactions.push({
+                ...tx,
+                blockHash: block.hash,
+                blockIndex: block.index,
+                timestamp: block.timestamp
+              });
+            }
+          });
+        }
+      });
+    } catch (txError) {
+      Logger.log(`Warning: Could not load transactions for wallet ${publicKey}: ${txError.message}`);
+    }
+    
+    const walletInfo = {
+      publicKey,
+      ...walletStats,
+      certificates: walletCertificates,
+      transactions: allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
+      isInstitution: publicKey === (nodeInstitution ? nodeInstitution.publicKey : null)
+    };
+    
+    res.json({
+      success: true,
+      wallet: walletInfo
+    });
   } catch (error) {
-    return false;
+    Logger.log(`Error fetching wallet ${req.params.publicKey}: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
-}
+});
+
+// Get certificates owned by a wallet
+app.get("/wallets/:publicKey/certificates", (req, res) => {
+  try {
+    const { publicKey } = req.params;
+    
+    let walletCertificates = [];
+    try {
+      // Use blockchain method for better performance and accuracy
+      walletCertificates = certificateBlockchain.getWalletCertificates(publicKey);
+    } catch (certError) {
+      Logger.log(`Warning: Could not load certificates for wallet ${publicKey}: ${certError.message}`);
+      // Fallback to manual search if blockchain method fails
+      const allCertificates = certificateBlockchain.getAllCertificates() || [];
+      walletCertificates = allCertificates.filter(cert => {
+        if (!cert) return false;
+        
+        // Include certificates issued by this wallet (institution)
+        if (cert.institutionPublicKey === publicKey) {
+          return true;
+        }
+        
+        // Include certificates assigned to this wallet address
+        if (cert.metadata && cert.metadata.recipientWalletAddress === publicKey) {
+          return true;
+        }
+        
+        return false;
+      });
+    }
+    
+    res.json({
+      success: true,
+      certificates: walletCertificates,
+      count: walletCertificates.length
+    });
+  } catch (error) {
+    Logger.log(`Error fetching certificates for wallet ${req.params.publicKey}: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Get transaction history for a wallet
+app.get("/wallets/:publicKey/transactions", (req, res) => {
+  try {
+    const { publicKey } = req.params;
+    const transactions = [];
+    
+    // Get all transactions involving this wallet
+    certificateBlockchain.chain.forEach(block => {
+      block.transactions.forEach(tx => {
+        if (tx.fromAddress === publicKey || tx.toAddress === publicKey) {
+          transactions.push({
+            ...tx,
+            blockHash: block.hash,
+            blockIndex: block.index,
+            blockTimestamp: block.timestamp,
+            type: tx.fromAddress === publicKey ? 'SENT' : 'RECEIVED'
+          });
+        }
+      });
+    });
+    
+    // Also include pending transactions
+    const pendingTransactions = mempool.getAllTransactions()
+      .filter(tx => tx.fromAddress === publicKey || tx.toAddress === publicKey)
+      .map(tx => ({
+        ...tx,
+        status: 'PENDING',
+        type: tx.fromAddress === publicKey ? 'SENT' : 'RECEIVED'
+      }));
+    
+    const allTransactions = [...transactions, ...pendingTransactions]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    res.json({
+      success: true,
+      transactions: allTransactions
+    });
+  } catch (error) {
+    Logger.log(`Error fetching transactions for wallet ${req.params.publicKey}: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
 
 // ==================== SERVER STARTUP ====================
 

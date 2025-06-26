@@ -25,7 +25,7 @@ class Certificate {
   }) {
     this.id = id || uuidv4();
     this.recipientName = recipientName;
-    this.recipientId = recipientId; // Student ID or similar identifier
+    this.recipientId = recipientId; // Recipient's wallet address
     this.institutionName = institutionName;
     this.institutionPublicKey = institutionPublicKey; // Institution's blockchain address
     this.certificateType = certificateType; // BACHELOR, MASTER, PHD, DIPLOMA, CERTIFICATION
