@@ -70,9 +70,6 @@ const CertificateDashboard: React.FC<CertificateDashboardProps> = ({
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Certificate Dashboard</h2>
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="animate-pulse">
@@ -96,15 +93,8 @@ const CertificateDashboard: React.FC<CertificateDashboardProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header with Search */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Certificate Dashboard</h2>
-          <p className="text-gray-600">
-            Manage and verify educational certificates on the blockchain
-          </p>
-        </div>
-        
+      {/* Search */}
+      <div className="flex justify-end">
         <form onSubmit={handleSearch} className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

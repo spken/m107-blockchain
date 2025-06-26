@@ -13,6 +13,11 @@ const EC = require("elliptic").ec;
 const Logger = require("../utils/Logger");
 const ec = new EC("secp256k1");
 
+// Auto-mining configuration
+let autoMiningEnabled = true;
+let autoMiningInterval = null;
+const MINING_INTERVAL_MS = 15000; // 15 seconds
+
 const app = express();
 const port = process.argv[2] || 3001;
 const currentNodeUrl = process.argv[3] || `http://localhost:${port}`;
@@ -76,6 +81,11 @@ const initializeDefaultInstitutions = () => {
     
     Logger.info(`Node initialized as: ${nodeInstitution.name} (${nodeInstitution.type})`);
     Logger.info(`Public Key: ${publicKey}`);
+    
+    // Start auto-mining for this node
+    setTimeout(() => {
+      startAutoMining();
+    }, 2000); // Wait 2 seconds after initialization
   }
 };
 
@@ -273,9 +283,10 @@ app.post("/certificates", async (req, res) => {
     await Promise.all(broadcastPromises);
 
     res.json({
-      message: "Certificate issued successfully",
+      message: "Certificate transaction created and broadcast to mempool",
       certificate: certificate,
-      transaction: transaction.getSummary()
+      transaction: transaction.getSummary(),
+      note: "Transaction is pending. Use the mining interface to mine blocks."
     });
 
   } catch (error) {
@@ -535,6 +546,43 @@ app.get("/institution", (req, res) => {
   }
 });
 
+// ==================== AUTO-MINING ENDPOINTS ====================
+
+/**
+ * Get auto-mining status
+ */
+app.get("/auto-mining/status", (req, res) => {
+  res.json({
+    enabled: autoMiningEnabled,
+    interval: MINING_INTERVAL_MS,
+    active: autoMiningInterval !== null,
+    pendingTransactions: certificateBlockchain.getPendingTransactions().length
+  });
+});
+
+/**
+ * Enable auto-mining
+ */
+app.post("/auto-mining/enable", (req, res) => {
+  autoMiningEnabled = true;
+  startAutoMining();
+  res.json({
+    message: "Auto-mining enabled",
+    interval: MINING_INTERVAL_MS
+  });
+});
+
+/**
+ * Disable auto-mining
+ */
+app.post("/auto-mining/disable", (req, res) => {
+  autoMiningEnabled = false;
+  stopAutoMining();
+  res.json({
+    message: "Auto-mining disabled"
+  });
+});
+
 // ==================== CONSENSUS ENDPOINTS ====================
 
 /**
@@ -671,5 +719,58 @@ app.listen(port, () => {
     Logger.log(`Institution: ${nodeInstitution.name} (${nodeInstitution.type})`);
   }
 });
+
+// Auto-mining function
+const performAutoMining = async () => {
+  try {
+    // Only mine if there are pending transactions and node is configured
+    if (!nodeInstitution || certificateBlockchain.getPendingTransactions().length === 0) {
+      return;
+    }
+
+    Logger.log(`Auto-mining: Found ${certificateBlockchain.getPendingTransactions().length} pending transactions`);
+    
+    const newBlock = certificateBlockchain.minePendingTransactions(nodeInstitution.publicKey);
+    Logger.log(`Auto-mining: Block mined successfully - ${newBlock.hash}`);
+
+    // Broadcast new block to network
+    const requestPromises = certificateBlockchain.networkNodes.map((networkNodeUrl) => {
+      return rp({
+        uri: networkNodeUrl + "/receive-new-block",
+        method: "POST",
+        body: { newBlock },
+        json: true,
+        timeout: 5000
+      }).catch(err => Logger.log(`Auto-mining: Failed to broadcast block to ${networkNodeUrl}:`, err.message));
+    });
+
+    await Promise.all(requestPromises);
+    Logger.log(`Auto-mining: Block broadcast completed`);
+    
+  } catch (error) {
+    Logger.log(`Auto-mining error: ${error.message}`);
+  }
+};
+
+// Start auto-mining when node is ready
+const startAutoMining = () => {
+  if (autoMiningInterval) {
+    clearInterval(autoMiningInterval);
+  }
+  
+  if (autoMiningEnabled && nodeInstitution) {
+    Logger.log(`Auto-mining started: Mining every ${MINING_INTERVAL_MS/1000} seconds`);
+    autoMiningInterval = setInterval(performAutoMining, MINING_INTERVAL_MS);
+  }
+};
+
+// Stop auto-mining
+const stopAutoMining = () => {
+  if (autoMiningInterval) {
+    clearInterval(autoMiningInterval);
+    autoMiningInterval = null;
+    Logger.log("Auto-mining stopped");
+  }
+};
 
 module.exports = app;

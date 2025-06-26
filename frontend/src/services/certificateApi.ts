@@ -164,6 +164,34 @@ class CertificateAPI {
     return this.fetchAPI<CertificateTransaction[]>('/transactions/pending');
   }
 
+  // ==================== AUTO-MINING ENDPOINTS ====================
+
+  /**
+   * Get auto-mining status
+   */
+  async getAutoMiningStatus(): Promise<{
+    enabled: boolean;
+    interval: number;
+    active: boolean;
+    pendingTransactions: number;
+  }> {
+    return this.fetchAPI('/auto-mining/status');
+  }
+
+  /**
+   * Enable auto-mining
+   */
+  async enableAutoMining(): Promise<{ message: string; interval: number }> {
+    return this.fetchAPI('/auto-mining/enable', { method: 'POST' });
+  }
+
+  /**
+   * Disable auto-mining
+   */
+  async disableAutoMining(): Promise<{ message: string }> {
+    return this.fetchAPI('/auto-mining/disable', { method: 'POST' });
+  }
+
   // ==================== INSTITUTION ENDPOINTS ====================
 
   /**
@@ -301,6 +329,11 @@ export const api = {
   // Transactions
   getPendingTransactions: () => certificateAPI.getPendingTransactions(),
 
+  // Auto-mining
+  getAutoMiningStatus: () => certificateAPI.getAutoMiningStatus(),
+  enableAutoMining: () => certificateAPI.enableAutoMining(),
+  disableAutoMining: () => certificateAPI.disableAutoMining(),
+
   // Institutions
   getInstitutions: () => certificateAPI.getInstitutions(),
   getCurrentInstitution: () => certificateAPI.getCurrentInstitution(),
@@ -314,5 +347,3 @@ export const api = {
   ping: () => certificateAPI.ping(),
   getHealth: () => certificateAPI.getHealth(),
 };
-
-export default api;

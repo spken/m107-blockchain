@@ -10,6 +10,7 @@ import CertificateIssuanceForm from "@/components/certificates/CertificateIssuan
 import CertificateViewer from "@/components/certificates/CertificateViewer";
 import { BlockchainOverview } from "@/components/BlockchainOverview";
 import { NetworkManager } from "@/components/NetworkManager";
+import MempoolViewer from "@/components/MempoolViewer";
 import {
   useBlocks,
   useInstitution,
@@ -30,6 +31,7 @@ import {
   Home,
   CheckCircle,
   XCircle,
+  Clock,
 } from "lucide-react";
 
 function App() {
@@ -68,7 +70,13 @@ function App() {
   } = useCertificates();
 
   // Certificate issuance
-  const { issueCertificate, loading: issuingCertificate } = useCertificateIssuance();
+  const { 
+    issueCertificate, 
+    loading: issuingCertificate, 
+    error: issuanceError, 
+    success: issuanceSuccess,
+    clearStatus: clearIssuanceStatus 
+  } = useCertificateIssuance();
 
   // Auto-initialize network when connection is established
   useEffect(() => {
@@ -198,8 +206,11 @@ function App() {
   useEffect(() => {
     if (activeTab === "dashboard") {
       refreshCertificates();
+    } else if (activeTab === "issue") {
+      // Clear any previous issuance status when opening the form
+      clearIssuanceStatus();
     }
-  }, [activeTab, refreshCertificates]);
+  }, [activeTab, refreshCertificates, clearIssuanceStatus]);
 
   const handleViewCertificate = (certificate: Certificate) => {
     setSelectedCertificate(certificate);
@@ -207,13 +218,22 @@ function App() {
   };
 
   const handleCertificateIssue = async (data: CertificateFormData) => {
+    console.log('Attempting to issue certificate with data:', data);
     try {
-      await issueCertificate(data);
-      // Switch to dashboard and refresh certificates
-      setActiveTab("dashboard");
-      refreshCertificates();
+      const result = await issueCertificate(data);
+      console.log('Certificate issuance result:', result);
+      if (result) {
+        console.log('Certificate issued successfully, redirecting to mempool...');
+        // Switch to mempool to show the new pending transaction
+        setActiveTab("mempool");
+        await refreshCertificates();
+        console.log('Data refreshed, new transaction should be visible in mempool');
+      } else {
+        console.error('Certificate issuance failed - no result returned');
+      }
     } catch (error) {
       console.error('Failed to issue certificate:', error);
+      // TODO: Show error message to user
     }
   };
 
@@ -292,8 +312,8 @@ function App() {
                       : isAutoInitializing
                         ? "Initializing Network..."
                         : isConnected
-                          ? "Network Online"
-                          : "Network Offline"}
+                          ? "Network Online & Synchronized"
+                          : "Network Offline, run backend?"}
                   </span>
                   {connectionError && !isConnected && (
                     <span className="text-xs text-red-500 max-w-xs truncate" title={connectionError}>
@@ -376,7 +396,7 @@ function App() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -388,6 +408,10 @@ function App() {
             <TabsTrigger value="verify" className="flex items-center gap-2">
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Verify Certificate</span>
+            </TabsTrigger>
+            <TabsTrigger value="mempool" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span className="hidden sm:inline">Mempool</span>
             </TabsTrigger>
             <TabsTrigger value="blockchain" className="flex items-center gap-2">
               <Blocks className="w-4 h-4" />
@@ -430,6 +454,7 @@ function App() {
                 Refresh
               </Button>
             </div>
+            
             <ErrorBoundary>
               <CertificateDashboard 
                 certificates={certificates}
@@ -456,6 +481,20 @@ function App() {
                 onSubmit={handleCertificateIssue}
                 loading={issuingCertificate}
               />
+              {issuanceError && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">
+                    <strong>Error:</strong> {issuanceError}
+                  </p>
+                </div>
+              )}
+              {issuanceSuccess && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-sm">
+                    <strong>Success:</strong> Certificate issued successfully!
+                  </p>
+                </div>
+              )}
             </ErrorBoundary>
           </TabsContent>
 
@@ -575,6 +614,13 @@ function App() {
             </ErrorBoundary>
           </TabsContent>
 
+          {/* Mempool Tab */}
+          <TabsContent value="mempool" className="space-y-6">
+            <ErrorBoundary>
+              <MempoolViewer />
+            </ErrorBoundary>
+          </TabsContent>
+
           {/* Blockchain Tab */}
           <TabsContent value="blockchain" className="space-y-6">
             <div className="flex items-center justify-between">
@@ -652,7 +698,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-500 text-sm">
             <p>
-              © 2024 Certificate Blockchain. Built with React, Vite, and Tailwind CSS.
+              © 2025 CertiChain. All rights reserved.
             </p>
             <p className="mt-2">
               Connected to certificate network on{" "}

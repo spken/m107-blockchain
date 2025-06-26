@@ -4,6 +4,7 @@ import type {
   CertificateFormData, 
   CertificateVerification,
   CertificateSearchParams,
+  CertificateTransaction,
   UseCertificatesState 
 } from '@/types/certificates';
 import { api } from '@/services/certificateApi';
@@ -348,5 +349,110 @@ export const useCertificateHelpers = () => {
     formatDate,
     isExpired,
     getDaysUntilExpiration,
+  };
+};
+
+/**
+ * Hook for managing pending certificate transactions (mempool)
+ */
+export const usePendingTransactions = () => {
+  const [pendingTransactions, setPendingTransactions] = useState<CertificateTransaction[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPendingTransactions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const transactions = await api.getPendingTransactions();
+      setPendingTransactions(transactions);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch pending transactions');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchPendingTransactions();
+  }, [fetchPendingTransactions]);
+
+  return {
+    pendingTransactions,
+    loading,
+    error,
+    refresh: fetchPendingTransactions,
+  };
+};
+
+/**
+ * Hook for managing auto-mining
+ */
+export const useAutoMining = () => {
+  const [status, setStatus] = useState<{
+    enabled: boolean;
+    interval: number;
+    active: boolean;
+    pendingTransactions: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStatus = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const statusData = await api.getAutoMiningStatus();
+      setStatus(statusData);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch auto-mining status');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const enableAutoMining = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await api.enableAutoMining();
+      await fetchStatus(); // Refresh status
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to enable auto-mining');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchStatus]);
+
+  const disableAutoMining = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await api.disableAutoMining();
+      await fetchStatus(); // Refresh status
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to disable auto-mining');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchStatus]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  return {
+    status,
+    loading,
+    error,
+    enableAutoMining,
+    disableAutoMining,
+    refresh: fetchStatus,
   };
 };
