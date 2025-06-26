@@ -1,3 +1,20 @@
+/**
+ * DEPRECATED: General Purpose Blockchain Network Node
+ * 
+ * This file implements a general purpose blockchain node with currency-like features
+ * (balances, amounts, fees, faucet, etc.) which are not relevant for the educational 
+ * certificate blockchain system.
+ * 
+ * Use CertificateNode.js instead for the certificate management system.
+ * 
+ * The certificate blockchain focuses on:
+ * - Certificate issuance and verification
+ * - Institution management with Proof of Authority
+ * - Certificate ownership tracking via wallet addresses
+ * 
+ * It does NOT include currency features like balances, mining rewards, or transaction fees.
+ */
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");

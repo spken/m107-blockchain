@@ -172,22 +172,6 @@ class CertificateTransaction {
   }
 
   /**
-   * Create mining reward transaction
-   */
-  static createMiningReward(minerAddress, reward) {
-    return new CertificateTransaction({
-      type: "MINING_REWARD",
-      fromAddress: null,
-      toAddress: minerAddress,
-      payload: {
-        reward,
-        minedAt: new Date().toISOString()
-      },
-      fee: 0
-    });
-  }
-
-  /**
    * Get transaction summary for display
    */
   getSummary() {

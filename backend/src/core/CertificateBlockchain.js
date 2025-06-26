@@ -6,13 +6,15 @@ const { InstitutionRegistry } = require("./Institution");
 /**
  * Educational Certificate Blockchain
  * Specialized blockchain for managing educational certificates with Proof of Authority consensus
+ * 
+ * This blockchain is designed specifically for certificate management and does not include
+ * currency-like features such as balances, amounts, or transaction fees.
  */
 class CertificateBlockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
     this.pendingTransactions = [];
-    this.difficulty = 2; // Lower difficulty for faster consensus
-    this.miningReward = 10; // Small reward for maintaining the network
+    this.difficulty = 2; // Lower difficulty for faster consensus in PoA
     this.currentNodeUrl = "";
     this.networkNodes = [];
     this.institutionRegistry = new InstitutionRegistry();
@@ -22,7 +24,7 @@ class CertificateBlockchain {
     this.revokedCertificates = new Set(); // Set of revoked certificate IDs
     this.verificationHistory = new Map(); // certificateId -> verification records
     
-    // Wallet-specific data structures
+    // Wallet-specific data structures for certificate ownership tracking
     this.walletCertificates = new Map(); // walletAddress -> Set of certificate IDs
     this.walletIssuedCertificates = new Map(); // walletAddress -> Set of certificate IDs (as issuer)
     this.walletReceivedCertificates = new Map(); // walletAddress -> Set of certificate IDs (as recipient)
@@ -65,21 +67,15 @@ class CertificateBlockchain {
 
   /**
    * Mine pending transactions (Proof of Authority)
+   * In a certificate blockchain, "mining" is simply processing pending certificate transactions
    */
-  minePendingTransactions(miningRewardAddress) {
-    // Only authorized validators can mine
-    if (!this.isAuthorizedValidator(miningRewardAddress)) {
-      throw new Error("Only authorized institutions can mine blocks");
+  minePendingTransactions(validatorAddress) {
+    // Only authorized validators can process blocks
+    if (!this.isAuthorizedValidator(validatorAddress)) {
+      throw new Error("Only authorized institutions can process certificate blocks");
     }
 
-    // Add mining reward
-    const rewardTransaction = CertificateTransaction.createMiningReward(
-      miningRewardAddress,
-      this.miningReward
-    );
-    this.pendingTransactions.push(rewardTransaction);
-
-    // Create new block
+    // Create new block without mining rewards (not applicable for certificates)
     const block = new Block(
       this.chain.length, // Index is the current chain length
       Date.now(),
@@ -87,10 +83,10 @@ class CertificateBlockchain {
       this.getLatestBlock().hash
     );
     
-    // Lighter mining for PoA
+    // Light processing for PoA (no energy-intensive mining)
     block.mineBlock(this.difficulty);
 
-    // Process transactions after mining
+    // Process transactions after block creation
     this.processPendingTransactions();
 
     // Add block to chain
@@ -126,9 +122,6 @@ class CertificateBlockchain {
         break;
       case "CERTIFICATE_REVOCATION":
         this.processCertificateRevocation(transaction);
-        break;
-      case "MINING_REWARD":
-        // Mining rewards don't need special processing
         break;
       default:
         console.warn(`Unknown transaction type: ${transaction.type}`);

@@ -13,10 +13,10 @@ const EC = require("elliptic").ec;
 const Logger = require("../utils/Logger");
 const ec = new EC("secp256k1");
 
-// Auto-mining configuration
-let autoMiningEnabled = true;
-let autoMiningInterval = null;
-const MINING_INTERVAL_MS = 15000; // 15 seconds
+// Auto-processing configuration for certificate transactions
+let autoProcessingEnabled = true;
+let autoProcessingInterval = null;
+const PROCESSING_INTERVAL_MS = 15000; // 15 seconds
 
 const app = express();
 const port = process.argv[2] || 3001;
@@ -82,9 +82,9 @@ const initializeDefaultInstitutions = () => {
     Logger.info(`Node initialized as: ${nodeInstitution.name} (${nodeInstitution.type})`);
     Logger.info(`Public Key: ${publicKey}`);
     
-    // Start auto-mining for this node
+    // Start auto-processing for this node
     setTimeout(() => {
-      startAutoMining();
+      startAutoProcessing();
     }, 2000); // Wait 2 seconds after initialization
   }
 };
@@ -297,12 +297,12 @@ app.post("/certificates", async (req, res) => {
 
     await Promise.all(broadcastPromises);
 
-    res.json({
-      message: "Certificate transaction created and broadcast to mempool",
-      certificate: certificate,
-      transaction: transaction.getSummary(),
-      note: "Transaction is pending. Use the mining interface to mine blocks."
-    });
+  res.json({
+    message: "Certificate transaction created and broadcast to mempool",
+    certificate: certificate,
+    transaction: transaction.getSummary(),
+    note: "Transaction is pending. Use the block processing interface to process certificate transactions."
+  });
 
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -512,9 +512,10 @@ app.post("/mine", async (req, res) => {
     await Promise.all(requestPromises);
 
     res.json({
-      note: "Block mined successfully and broadcast to network",
+      note: "Certificate block processed successfully and broadcast to network",
       block: newBlock,
-      institution: nodeInstitution.name
+      institution: nodeInstitution.name,
+      certificatesProcessed: newBlock.transactions.length
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -574,40 +575,40 @@ app.get("/institution", (req, res) => {
   }
 });
 
-// ==================== AUTO-MINING ENDPOINTS ====================
+// ==================== AUTO-PROCESSING ENDPOINTS ====================
 
 /**
- * Get auto-mining status
+ * Get auto-processing status
  */
 app.get("/auto-mining/status", (req, res) => {
   res.json({
-    enabled: autoMiningEnabled,
-    interval: MINING_INTERVAL_MS,
-    active: autoMiningInterval !== null,
+    enabled: autoProcessingEnabled,
+    interval: PROCESSING_INTERVAL_MS,
+    active: autoProcessingInterval !== null,
     pendingTransactions: certificateBlockchain.getPendingTransactions().length
   });
 });
 
 /**
- * Enable auto-mining
+ * Enable auto-processing
  */
 app.post("/auto-mining/enable", (req, res) => {
-  autoMiningEnabled = true;
-  startAutoMining();
+  autoProcessingEnabled = true;
+  startAutoProcessing();
   res.json({
-    message: "Auto-mining enabled",
-    interval: MINING_INTERVAL_MS
+    message: "Auto-processing enabled",
+    interval: PROCESSING_INTERVAL_MS
   });
 });
 
 /**
- * Disable auto-mining
+ * Disable auto-processing
  */
 app.post("/auto-mining/disable", (req, res) => {
-  autoMiningEnabled = false;
-  stopAutoMining();
+  autoProcessingEnabled = false;
+  stopAutoProcessing();
   res.json({
-    message: "Auto-mining disabled"
+    message: "Auto-processing disabled"
   });
 });
 
@@ -1010,18 +1011,18 @@ app.listen(port, () => {
   }
 });
 
-// Auto-mining function
-const performAutoMining = async () => {
+// Auto-processing function for certificate transactions
+const performAutoProcessing = async () => {
   try {
-    // Only mine if there are pending transactions and node is configured
+    // Only process if there are pending transactions and node is configured
     if (!nodeInstitution || certificateBlockchain.getPendingTransactions().length === 0) {
       return;
     }
 
-    Logger.log(`Auto-mining: Found ${certificateBlockchain.getPendingTransactions().length} pending transactions`);
+    Logger.log(`Auto-processing: Found ${certificateBlockchain.getPendingTransactions().length} pending certificate transactions`);
     
     const newBlock = certificateBlockchain.minePendingTransactions(nodeInstitution.publicKey);
-    Logger.log(`Auto-mining: Block mined successfully - ${newBlock.hash}`);
+    Logger.log(`Auto-processing: Certificate block processed successfully - ${newBlock.hash}`);
 
     // Broadcast new block to network
     const requestPromises = certificateBlockchain.networkNodes.map((networkNodeUrl) => {
@@ -1031,35 +1032,35 @@ const performAutoMining = async () => {
         body: { newBlock },
         json: true,
         timeout: 5000
-      }).catch(err => Logger.log(`Auto-mining: Failed to broadcast block to ${networkNodeUrl}:`, err.message));
+      }).catch(err => Logger.log(`Auto-processing: Failed to broadcast block to ${networkNodeUrl}:`, err.message));
     });
 
     await Promise.all(requestPromises);
-    Logger.log(`Auto-mining: Block broadcast completed`);
+    Logger.log(`Auto-processing: Block broadcast completed`);
     
   } catch (error) {
-    Logger.log(`Auto-mining error: ${error.message}`);
+    Logger.log(`Auto-processing error: ${error.message}`);
   }
 };
 
-// Start auto-mining when node is ready
-const startAutoMining = () => {
-  if (autoMiningInterval) {
-    clearInterval(autoMiningInterval);
+// Start auto-processing when node is ready
+const startAutoProcessing = () => {
+  if (autoProcessingInterval) {
+    clearInterval(autoProcessingInterval);
   }
   
-  if (autoMiningEnabled && nodeInstitution) {
-    Logger.log(`Auto-mining started: Mining every ${MINING_INTERVAL_MS/1000} seconds`);
-    autoMiningInterval = setInterval(performAutoMining, MINING_INTERVAL_MS);
+  if (autoProcessingEnabled && nodeInstitution) {
+    Logger.log(`Auto-processing started: Processing every ${PROCESSING_INTERVAL_MS/1000} seconds`);
+    autoProcessingInterval = setInterval(performAutoProcessing, PROCESSING_INTERVAL_MS);
   }
 };
 
-// Stop auto-mining
-const stopAutoMining = () => {
-  if (autoMiningInterval) {
-    clearInterval(autoMiningInterval);
-    autoMiningInterval = null;
-    Logger.log("Auto-mining stopped");
+// Stop auto-processing
+const stopAutoProcessing = () => {
+  if (autoProcessingInterval) {
+    clearInterval(autoProcessingInterval);
+    autoProcessingInterval = null;
+    Logger.log("Auto-processing stopped");
   }
 };
 

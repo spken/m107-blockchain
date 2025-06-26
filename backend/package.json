@@ -1,7 +1,7 @@
 {
   "name": "certificate-blockchain",
   "version": "1.0.0",
-  "description": "Decentralized Blockchain for Educational Certificates",
+  "description": "Decentralized Blockchain for Educational Certificates - Proof of Authority System",
   "main": "src/network/CertificateNode.js",
   "scripts": {
     "start": "node src/network/CertificateNode.js 3001 http://localhost:3001",
@@ -12,9 +12,17 @@
     "nodes": "npm-run-all --parallel university vocational certification",
     "test": "node src/test/CertificateTest.js",
     "test:api": "node src/test/ApiTest.js",
-    "test:legacy": "node src/test/Test.js"
+    "test:legacy": "echo 'Legacy tests deprecated - use npm run test instead'"
   },
-  "author": "Dein Name",
+  "keywords": [
+    "blockchain",
+    "certificates",
+    "education",
+    "proof-of-authority",
+    "digital-credentials",
+    "verification"
+  ],
+  "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
