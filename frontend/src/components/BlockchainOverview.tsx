@@ -200,18 +200,18 @@ export function BlockchainOverview() {
           <CardHeader>
             <CardTitle>Recent Blocks</CardTitle>
             <CardDescription>
-              Last {Math.min(5, blocks.length)} blocks in the chain
+              Last {Math.min(10, blocks.length)} blocks in the chain
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {blocks.slice(-5).reverse().map((block: any, index: number) => (
+              {blocks.slice(-10).reverse().map((block: any, index: number) => (
                 <div
                   key={block.hash || index}
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <Badge variant="outline">#{block.index || index}</Badge>
+                    <Badge variant="outline">#{block.index !== undefined ? block.index : 'N/A'}</Badge>
                     <div>
                       <div className="font-mono text-sm">
                         {block.hash?.slice(0, 16)}...

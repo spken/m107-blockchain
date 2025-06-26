@@ -2,7 +2,8 @@ const crypto = require("crypto");
 const Logger = require("../utils/Logger");
 
 class Block {
-  constructor(timestamp, transactions, previousHash = "") {
+  constructor(index, timestamp, transactions, previousHash = "") {
+    this.index = index;
     this.timestamp = new Date(timestamp).toISOString();
     this.transactions = transactions;
     this.previousHash = previousHash;
@@ -14,7 +15,8 @@ class Block {
     return crypto
       .createHash("sha256")
       .update(
-        this.previousHash +
+        this.index +
+          this.previousHash +
           this.timestamp +
           JSON.stringify(this.transactions) +
           this.nonce,

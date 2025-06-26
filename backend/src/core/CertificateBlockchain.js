@@ -31,7 +31,7 @@ class CertificateBlockchain {
    * Create the genesis block
    */
   createGenesisBlock() {
-    const genesisBlock = new Block(Date.now(), [], "0");
+    const genesisBlock = new Block(0, Date.now(), [], "0");
     genesisBlock.hash = genesisBlock.calculateHash();
     return genesisBlock;
   }
@@ -76,6 +76,7 @@ class CertificateBlockchain {
 
     // Create new block
     const block = new Block(
+      this.chain.length, // Index is the current chain length
       Date.now(),
       this.pendingTransactions.map(tx => tx.toLegacyTransaction()),
       this.getLatestBlock().hash
