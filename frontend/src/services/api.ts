@@ -28,28 +28,46 @@ class BlockchainAPI {
     endpoint: string,
     options?: RequestInit,
   ): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      ...options,
-    });
+    try {
+      // Create timeout controller
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage;
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage =
-          errorJson.error || errorJson.message || `HTTP ${response.status}`;
-      } catch {
-        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+        },
+        signal: controller.signal,
+        ...options,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage =
+            errorJson.error || errorJson.message || `HTTP ${response.status}`;
+        } catch {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
-      throw new Error(errorMessage);
-    }
 
-    return response.json();
+      return response.json();
+    } catch (error) {
+      // Enhanced error handling for network issues
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('ERR_CONNECTION_REFUSED: Cannot connect to backend server');
+      } else if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: Backend server is not responding');
+      } else {
+        throw error;
+      }
+    }
   }
 
   // Blockchain endpoints

@@ -308,42 +308,88 @@ export const useNetwork = () => {
 };
 
 /**
- * Hook for connection status monitoring
+ * Hook for connection status monitoring with enhanced error handling
  */
 export const useConnectionStatus = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lastCheck, setLastCheck] = useState<string | null>(null);
+  const [retryAttempts, setRetryAttempts] = useState(0);
 
-  const checkConnection = useCallback(async () => {
+  const checkConnection = useCallback(async (isAutomatic = false) => {
     setIsChecking(true);
+    if (!isAutomatic) {
+      setError(null);
+    }
     
     try {
       const connected = await api.ping();
       setIsConnected(connected);
       setLastCheck(new Date().toISOString());
-    } catch {
+      setError(null);
+      setRetryAttempts(0);
+    } catch (error) {
       setIsConnected(false);
       setLastCheck(new Date().toISOString());
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      let friendlyError = 'Connection failed';
+      
+      // Provide user-friendly error messages
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('ERR_CONNECTION_REFUSED')) {
+        friendlyError = 'Backend server is not running. Please start the backend service.';
+      } else if (errorMessage.includes('ERR_NETWORK')) {
+        friendlyError = 'Network error. Please check your internet connection.';
+      } else if (errorMessage.includes('timeout')) {
+        friendlyError = 'Connection timeout. The backend server may be overloaded.';
+      } else if (errorMessage.includes('404')) {
+        friendlyError = 'Backend API not found. Please check the server configuration.';
+      } else if (errorMessage.includes('500')) {
+        friendlyError = 'Backend server error. Please check the server logs.';
+      } else {
+        friendlyError = `Connection error: ${errorMessage}`;
+      }
+      
+      setError(friendlyError);
+      setRetryAttempts(prev => prev + 1);
     } finally {
       setIsChecking(false);
     }
   }, []);
 
-  // Check connection on mount and periodically
+  // Check connection on mount and periodically with smart retry logic
   useEffect(() => {
-    checkConnection();
+    checkConnection(false);
     
-    const interval = setInterval(checkConnection, 30000); // Check every 30 seconds
+    const getRetryInterval = () => {
+      if (isConnected) {
+        return 30000; // 30 seconds when connected
+      } else {
+        // Exponential backoff: 5s, 10s, 20s, then 30s max when disconnected
+        return Math.min(5000 * Math.pow(2, retryAttempts), 30000);
+      }
+    };
+    
+    const interval = setInterval(() => {
+      checkConnection(true);
+    }, getRetryInterval());
     
     return () => clearInterval(interval);
+  }, [checkConnection, isConnected, retryAttempts]);
+
+  const retry = useCallback(() => {
+    checkConnection(false);
   }, [checkConnection]);
 
   return {
     isConnected,
     isChecking,
+    error,
     lastCheck,
+    retryAttempts,
     checkConnection,
+    retry,
   };
 };
 

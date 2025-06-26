@@ -25,16 +25,23 @@ class CertificateAPI {
   private async fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Create timeout controller
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+      signal: controller.signal,
       ...options,
     };
 
     try {
       const response = await fetch(url, config);
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -43,7 +50,14 @@ class CertificateAPI {
 
       return await response.json();
     } catch (error) {
-      if (error instanceof Error) {
+      clearTimeout(timeoutId);
+      
+      // Enhanced error handling for network issues
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('ERR_CONNECTION_REFUSED: Cannot connect to backend server');
+      } else if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: Backend server is not responding');
+      } else if (error instanceof Error) {
         throw error;
       }
       throw new Error('Network request failed');

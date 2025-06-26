@@ -15,6 +15,7 @@ import {
   useInstitution,
   useConsensus,
   useConnectionStatus,
+  useNetwork,
 } from "@/hooks/useBlockchain";
 import { useCertificates, useCertificateIssuance, useCertificateVerification } from "@/hooks/useCertificates";
 import type { Certificate, CertificateFormData } from "@/types/certificates";
@@ -35,6 +36,7 @@ function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [isAutoInitializing, setIsAutoInitializing] = useState(false);
   
   // Blockchain and network state
   const {
@@ -44,8 +46,18 @@ function App() {
   } = useBlocks();
   
   const { runConsensus } = useConsensus();
-  const { isConnected, isChecking } = useConnectionStatus();
+  const connectionStatus = useConnectionStatus();
+  const { isConnected, isChecking, error: connectionError, retry: retryConnection } = connectionStatus;
   const { institution } = useInstitution();
+  
+  // Network management for auto-initialization
+  const {
+    networkStatus,
+    institutions,
+    initializeNetwork,
+    loading: networkLoading,
+    refresh: refreshNetworkData,
+  } = useNetwork();
   
   // Certificate state
   const {
@@ -58,8 +70,107 @@ function App() {
   // Certificate issuance
   const { issueCertificate, loading: issuingCertificate } = useCertificateIssuance();
 
-  // Periodic consensus to keep the blockchain synchronized
+  // Auto-initialize network when connection is established
   useEffect(() => {
+    let initializationTimeout: NodeJS.Timeout;
+
+    const attemptNetworkInitialization = async () => {
+      if (isAutoInitializing) {
+        console.log("Auto-initialization already in progress, skipping");
+        return;
+      }
+
+      try {
+        console.log("Connection established, checking if network needs initialization...");
+        setIsAutoInitializing(true);
+        
+        // First, refresh network data to get current status
+        await refreshNetworkData();
+        
+        // Wait a moment for the data to be updated - we'll check in the next effect cycle
+        
+      } catch (error) {
+        console.log("Error refreshing network data:", error);
+        setIsAutoInitializing(false);
+      }
+    };
+
+    if (isConnected && !isChecking) {
+      // Wait a moment after connection is established before trying to initialize
+      initializationTimeout = setTimeout(attemptNetworkInitialization, 1000);
+    }
+
+    return () => {
+      if (initializationTimeout) {
+        clearTimeout(initializationTimeout);
+      }
+    };
+  }, [isConnected, isChecking, refreshNetworkData]);
+
+  // Separate effect to check for initialization after network data is loaded
+  useEffect(() => {
+    const checkAndInitialize = async () => {
+      if (!isConnected || !isAutoInitializing || networkLoading) {
+        return;
+      }
+
+      try {
+        // Check if network needs initialization (multiple indicators)
+        const hasNoNetworkNodes = !networkStatus?.networkNodes || networkStatus.networkNodes.length === 0;
+        const hasNoInstitution = !networkStatus?.institution;
+        const hasNoInstitutions = institutions.length === 0;
+        const hasOnlyGenesisBlock = !blocks || blocks.length <= 1;
+        
+        const needsInit = !networkStatus || hasNoNetworkNodes || hasNoInstitution || (hasNoInstitutions && hasOnlyGenesisBlock);
+        
+        console.log("Network initialization check:", {
+          needsInit,
+          hasNetworkStatus: !!networkStatus,
+          networkNodesCount: networkStatus?.networkNodes?.length || 0,
+          hasInstitution: !hasNoInstitution,
+          institutionsLength: institutions.length,
+          blocksCount: blocks?.length || 0,
+          reasons: {
+            hasNoNetworkNodes,
+            hasNoInstitution,
+            hasNoInstitutions,
+            hasOnlyGenesisBlock
+          }
+        });
+
+        if (needsInit) {
+          console.log("Network appears uninitialized, attempting automatic initialization...");
+          const success = await initializeNetwork();
+          if (success) {
+            console.log("Network automatically initialized successfully");
+            // Refresh data after successful initialization
+            refetchBlocks();
+            refreshCertificates();
+          } else {
+            console.log("Automatic network initialization failed");
+          }
+        } else {
+          console.log("Network appears to be already initialized, skipping auto-init");
+        }
+      } catch (error) {
+        console.log("Error during automatic network initialization:", error);
+      } finally {
+        setIsAutoInitializing(false);
+      }
+    };
+
+    // Only run if we're in auto-initialization mode and network data is loaded
+    if (isAutoInitializing && !networkLoading) {
+      checkAndInitialize();
+    }
+  }, [isAutoInitializing, networkLoading, networkStatus, institutions, blocks, isConnected, initializeNetwork, refetchBlocks, refreshCertificates]);
+
+  // Periodic consensus to keep the blockchain synchronized (only when connected)
+  useEffect(() => {
+    if (!isConnected) {
+      return; // Don't run consensus when not connected
+    }
+
     const runPeriodicConsensus = async () => {
       try {
         const result = await runConsensus();
@@ -77,11 +188,11 @@ function App() {
     // Run consensus every 30 seconds to keep nodes synchronized
     const consensusInterval = setInterval(runPeriodicConsensus, 30000);
 
-    // Also run consensus on initial load
+    // Also run consensus on initial connection
     runPeriodicConsensus();
 
     return () => clearInterval(consensusInterval);
-  }, [runConsensus, refetchBlocks, refreshCertificates]);
+  }, [runConsensus, refetchBlocks, refreshCertificates, isConnected]);
 
   // Auto-refresh certificates when switching to dashboard
   useEffect(() => {
@@ -164,28 +275,102 @@ function App() {
               )}
               
               {/* Network Status */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div
                   className={`w-2 h-2 rounded-full ${
-                    isChecking
+                    isChecking || isAutoInitializing
                       ? "bg-yellow-500 animate-pulse"
                       : isConnected
                         ? "bg-green-500 animate-pulse"
                         : "bg-red-500"
                   }`}
                 ></div>
-                <span className="text-sm text-gray-600">
-                  {isChecking
-                    ? "Connecting..."
-                    : isConnected
-                      ? "Network Online"
-                      : "Network Offline"}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-600">
+                    {isChecking
+                      ? "Connecting..."
+                      : isAutoInitializing
+                        ? "Initializing Network..."
+                        : isConnected
+                          ? "Network Online"
+                          : "Network Offline"}
+                  </span>
+                  {connectionError && !isConnected && (
+                    <span className="text-xs text-red-500 max-w-xs truncate" title={connectionError}>
+                      {connectionError}
+                    </span>
+                  )}
+                  {isAutoInitializing && (
+                    <span className="text-xs text-blue-600">
+                      Setting up blockchain network...
+                    </span>
+                  )}
+                </div>
+                {!isConnected && !isChecking && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={retryConnection}
+                    className="text-xs px-2 py-1 h-6"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    Retry
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Connection Error Banner */}
+      {connectionError && !isConnected && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <XCircle className="w-5 h-5 text-red-400 mr-3" />
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">
+                    Network Connection Error
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    {connectionError}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={retryConnection}
+                className="bg-white border-red-300 text-red-700 hover:bg-red-50"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry Connection
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auto-Initialization Banner */}
+      {isAutoInitializing && isConnected && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center">
+              <RefreshCw className="w-5 h-5 text-blue-400 mr-3 animate-spin" />
+              <div>
+                <h3 className="text-sm font-medium text-blue-800">
+                  Initializing Blockchain Network
+                </h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Setting up peer connections and network configuration...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1">
