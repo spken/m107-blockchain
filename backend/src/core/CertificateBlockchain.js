@@ -551,6 +551,92 @@ class CertificateBlockchain {
       receivedCertificates: receivedCount
     };
   }
+
+  /**
+   * Verify a certificate by ID
+   */
+  verifyCertificate(certificateId) {
+    try {
+      // Get certificate from blockchain
+      const certificate = this.getCertificateById(certificateId);
+      
+      if (!certificate) {
+        return {
+          valid: false,
+          status: "NOT_FOUND",
+          message: "Certificate not found on the blockchain",
+          certificate: null
+        };
+      }
+
+      // Check if certificate is revoked
+      if (this.revokedCertificates.has(certificateId)) {
+        return {
+          valid: false,
+          status: "REVOKED",
+          message: "Certificate has been revoked",
+          certificate: certificate
+        };
+      }
+
+      // Check if certificate is expired
+      if (certificate.isExpired()) {
+        return {
+          valid: false,
+          status: "EXPIRED", 
+          message: "Certificate has expired",
+          certificate: certificate
+        };
+      }
+
+      // Verify certificate signature and integrity
+      try {
+        const signatureValid = certificate.isValid();
+        if (!signatureValid) {
+          return {
+            valid: false,
+            status: "INVALID",
+            message: "Certificate signature is invalid",
+            certificate: certificate
+          };
+        }
+      } catch (error) {
+        return {
+          valid: false,
+          status: "INVALID",
+          message: "Certificate validation failed: " + error.message,
+          certificate: certificate
+        };
+      }
+
+      // Check if issuing institution is authorized
+      if (!this.isAuthorizedValidator(certificate.institutionPublicKey)) {
+        return {
+          valid: false,
+          status: "INVALID",
+          message: "Certificate was issued by an unauthorized institution",
+          certificate: certificate
+        };
+      }
+
+      // Certificate is valid
+      return {
+        valid: true,
+        status: "VALID",
+        message: "Certificate is valid and authentic",
+        certificate: certificate,
+        verificationHistory: this.verificationHistory.get(certificateId) || []
+      };
+
+    } catch (error) {
+      return {
+        valid: false,
+        status: "ERROR",
+        message: "Verification error: " + error.message,
+        certificate: null
+      };
+    }
+  }
 }
 
 module.exports = CertificateBlockchain;
