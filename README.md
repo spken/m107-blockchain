@@ -78,8 +78,85 @@ Die Blockchain-Technologie bietet perfekte Eigenschaften für dieses Problem:
 
 ### 2.1. Systemarchitektur (Überblick)
 
+```plantuml
+@startuml
+
+package "Frontend" {
+    [Web UI]
+}
+
+package "API Layer" {
+    [API Gateway]
+    [ID Check]
+}
+
+package "Blockchain" {
+    node "Node A"
+    node "Node B"
+    node "Node C"
+}
+
+package "Storage" {
+    database "Memory (für jetzt)"
+}
+
+[Web UI] --> [API Gateway]
+
+[API Gateway] --> "Node A"
+[API Gateway] --> "Node B"
+[API Gateway] --> "Node C"
+
+"Node A" <--> "Node B"
+"Node B" <--> "Node C"
+"Node C" <--> "Node A"
+
+[ID Check] --> [API Gateway]
+[API Gateway] --> [ID Check]
+
+"Node A" --> "Memory (für jetzt)"
+"Node B" --> "Memory (für jetzt)"
+"Node C" --> "Memory (für jetzt)"
+
+[API Gateway] --> "Memory (für jetzt)"
+
+@enduml
+```
+
 ### 2.2. Netzwerk-Topologie (3 Nodes)
 
+```plantuml
+@startuml
+
+participant "Student" as Student
+participant "Universität" as University
+participant "Blockchain" as Blockchain
+participant "Arbeitgeber" as Employer
+
+Student -> University: Antrag auf\nZertifikat-Ausstellung
+activate University
+University -> University: Prüfung der\nVoraussetzungen
+University -> Blockchain: Zertifikat ausstellen\n(CERT_2024_001)
+activate Blockchain
+Blockchain -> Blockchain: Validierung durch\n2 von 3 Nodes
+Blockchain --> University: Bestätigung
+deactivate Blockchain
+University -> Student: Benachrichtigung
+deactivate University
+
+note over Student: Student bewirbt sich\nbei Arbeitgeber
+
+Student -> Employer: Bewerbung mit\nZertifikat-ID
+activate Employer
+Employer -> Blockchain: Zertifikat\nverifizieren
+activate Blockchain
+Blockchain -> Blockchain: Hash-Prüfung\n+ Signatur-Validierung
+Blockchain --> Employer: Zertifikat gültig\nDetails anzeigen
+deactivate Blockchain
+Employer --> Student: Positive\nRückmeldung
+deactivate Employer
+
+@enduml
+```
 
 ### 2.3. Node-Rollen und Berechtigungen
 
@@ -108,6 +185,39 @@ Da nur 3 vertrauensvolle Bildungseinrichtungen im Netzwerk sind, wird ein Proof 
 
 ### 2.5. Möglicher Transaktionsablauf
 
+```plantuml
+@startuml
+
+participant "Student" as Student
+participant "Universität" as University
+participant "Blockchain" as Blockchain
+participant "Arbeitgeber" as Employer
+
+Student -> University: Antrag auf\nZertifikat-Ausstellung
+activate University
+University -> University: Prüfung der\nVoraussetzungen
+University -> Blockchain: Zertifikat ausstellen\n(CERT_2024_001)
+activate Blockchain
+Blockchain -> Blockchain: Validierung durch\n2 von 3 Nodes
+Blockchain --> University: Bestätigung
+deactivate Blockchain
+University -> Student: Benachrichtigung
+deactivate University
+
+note over Student: Student bewirbt sich\nbei Arbeitgeber
+
+Student -> Employer: Bewerbung mit\nZertifikat-ID
+activate Employer
+Employer -> Blockchain: Zertifikat\nverifizieren
+activate Blockchain
+Blockchain -> Blockchain: Hash-Prüfung\n+ Signatur-Validierung
+Blockchain --> Employer: Zertifikat gültig\nDetails anzeigen
+deactivate Blockchain
+Employer --> Student: Positive\nRückmeldung
+deactivate Employer
+
+@enduml
+```
 
 ### 2.6. Klassendiagramm
 
