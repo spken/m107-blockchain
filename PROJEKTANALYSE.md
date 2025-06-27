@@ -69,7 +69,7 @@
 - [11. Gesamtfazit und Handlungsempfehlungen](#11-gesamtfazit-und-handlungsempfehlungen)
   - [11.1 Projektstatus: Erfolgreicher Proof of Concept](#111-projektstatus-erfolgreicher-proof-of-concept)
   - [11.2 Kritische Erfolgsfaktoren für Produktions-Einführung](#112-kritische-erfolgsfaktoren-für-produktions-einführung)
-    - [11.2.1 Sofortmaßnahmen (Kritisch)](#1121-sofortmaßnahmen-kritisch)
+    - [11.2.1 Sofortmassnahmen (Kritisch)](#1121-sofortmassnahmen-kritisch)
     - [11.2.2 Strategische Entwicklungen (Wichtig)](#1122-strategische-entwicklungen-wichtig)
   - [11.3 Empfehlung](#113-empfehlung)
 
@@ -687,7 +687,7 @@ Die durchgeführten Tests validierten alle Kernfunktionen der Blockchain:
 ```bash
 Build-Resultate:
 ✓ TypeScript-Kompilierung: 0 Fehler
-✓ Bundle-Größe: 312.27 kB (87.56 kB gzip) - OPTIMAL
+✓ Bundle-Grösse: 312.27 kB (87.56 kB gzip) - OPTIMAL
 ✓ Build-Zeit: 5.72s - SCHNELL
 ✓ 1660 Module transformiert
 ```
@@ -946,7 +946,7 @@ Nachteile:
 
 ### 10.2 Phase 2: Skalierung (Monate 4-6)
 
-**Skalierungsmaßnahmen:**
+**Skalierungsmassnahmen:**
 
 1. **Mikroservice-Architektur**
 2. **Load Balancing**
@@ -972,7 +972,7 @@ Das Projekt demonstriert erfolgreich die technische Machbarkeit einer Blockchain
 
 ### 11.2 Kritische Erfolgsfaktoren für Produktions-Einführung
 
-#### 11.2.1 Sofortmaßnahmen (Kritisch)
+#### 11.2.1 Sofortmassnahmen (Kritisch)
 
 1. **Persistenz-Layer implementieren**
 2. **Umfassende Test-Suite entwickeln**

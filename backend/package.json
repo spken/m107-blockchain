@@ -12,6 +12,8 @@
     "nodes": "npm-run-all --parallel university vocational certification",
     "test": "node src/test/CertificateTest.js",
     "test:api": "node src/test/ApiTest.js",
+    "test:integration": "node src/test/IntegrationTest.js",
+    "test:all": "npm run test && npm run test:api && npm run test:integration",
     "test:legacy": "echo 'Legacy tests deprecated - use npm run test instead'"
   },
   "keywords": [

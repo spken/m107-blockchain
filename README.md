@@ -298,9 +298,9 @@ Lösungsansätze:
 
 Problem:
 
-- Wachsende Anzahl von Zertifikaten führt zu größerer Blockchain
+- Wachsende Anzahl von Zertifikaten führt zu grösserer Blockchain
 - Längere Synchronisationszeiten bei neuen Nodes
-- Potentielle Leistungseinbußen bei gleichzeitigen Verifikationsanfragen
+- Potentielle Leistungseinbussen bei gleichzeitigen Verifikationsanfragen
 - Speicheranforderungen steigen kontinuierlich
 
 Lösungsansätze:
