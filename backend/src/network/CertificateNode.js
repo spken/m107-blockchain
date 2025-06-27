@@ -38,6 +38,9 @@ certificateBlockchain.networkNodes = [];
 // Node institution configuration (would be loaded from config in production)
 let nodeInstitution = null;
 
+// Wallet storage (In production, this would be a database)
+const walletStorage = new Map();
+
 // Initialize default institutions for the 3-node network
 const initializeDefaultInstitutions = () => {
   const institutions = [
@@ -734,8 +737,12 @@ app.post("/wallets", (req, res) => {
       publicKey: wallet.getPublicKey(),
       privateKey: wallet.getPrivateKey(),
       certificateCount: 0,
+      type: "INDIVIDUAL",
       created: new Date().toISOString()
     };
+    
+    // Store wallet in memory (in production, use database)
+    walletStorage.set(walletResponse.publicKey, walletResponse);
     
     Logger.log(`Created new wallet: ${walletResponse.id} (${walletResponse.label})`);
     
@@ -756,13 +763,11 @@ app.post("/wallets", (req, res) => {
 // Get all wallets with their balances and certificate counts
 app.get("/wallets", (req, res) => {
   try {
-    // For demo purposes, we'll create some sample wallets
-    // In a real system, wallets would be stored in a database
-    const sampleWallets = [];
+    const allWallets = [];
     
     // Add institution wallet if available
     if (nodeInstitution) {
-      sampleWallets.push({
+      allWallets.push({
         id: "institution-wallet",
         label: `${nodeInstitution.name} Wallet`,
         publicKey: nodeInstitution.publicKey,
@@ -772,29 +777,43 @@ app.get("/wallets", (req, res) => {
       });
     }
     
-    // Add some demo user wallets
-    sampleWallets.push({
-      id: "user-wallet-1",
-      label: "Student Wallet #1",
-      publicKey: "04a1b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-      certificateCount: 0,
-      type: "INDIVIDUAL",
-      created: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-    });
+    // Add all created user wallets from storage
+    for (const [publicKey, wallet] of walletStorage.entries()) {
+      allWallets.push(wallet);
+    }
     
-    sampleWallets.push({
-      id: "user-wallet-2", 
-      label: "Graduate Wallet",
-      publicKey: "04b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1",
-      certificateCount: 0,
-      type: "INDIVIDUAL",
-      created: new Date(Date.now() - 172800000).toISOString() // 2 days ago
-    });
+    // If no user wallets exist, add some demo wallets for testing
+    if (walletStorage.size === 0) {
+      const demoWallets = [
+        {
+          id: "demo-wallet-1",
+          label: "Demo Student Wallet",
+          publicKey: "04a1b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+          certificateCount: 0,
+          type: "INDIVIDUAL",
+          created: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+          id: "demo-wallet-2", 
+          label: "Demo Graduate Wallet",
+          publicKey: "04b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1",
+          certificateCount: 0,
+          type: "INDIVIDUAL",
+          created: new Date(Date.now() - 172800000).toISOString()
+        }
+      ];
+      
+      // Store demo wallets
+      demoWallets.forEach(wallet => {
+        walletStorage.set(wallet.publicKey, wallet);
+        allWallets.push(wallet);
+      });
+    }
     
     // Add certificate counts for each wallet safely
     try {
       const allCertificates = certificateBlockchain.getAllCertificates() || [];
-      sampleWallets.forEach(wallet => {
+      allWallets.forEach(wallet => {
         wallet.certificateCount = allCertificates.filter(cert => {
           if (!cert) return false;
           
@@ -808,6 +827,11 @@ app.get("/wallets", (req, res) => {
             return true;
           }
           
+          // Also check recipientId field for backward compatibility
+          if (cert.recipientId === wallet.publicKey) {
+            return true;
+          }
+          
           return false;
         }).length;
       });
@@ -818,7 +842,7 @@ app.get("/wallets", (req, res) => {
     
     res.json({
       success: true,
-      wallets: sampleWallets
+      wallets: allWallets
     });
   } catch (error) {
     Logger.log(`Error fetching wallets: ${error.message}`);
@@ -834,14 +858,43 @@ app.get("/wallets/:publicKey", (req, res) => {
   try {
     const { publicKey } = req.params;
     
+    // Check if wallet exists in storage or institution registry
+    let walletInfo = walletStorage.get(publicKey);
+    
+    // Check if it's an institution wallet
+    if (!walletInfo && nodeInstitution && nodeInstitution.publicKey === publicKey) {
+      walletInfo = {
+        id: "institution-wallet",
+        label: `${nodeInstitution.name} Wallet`,
+        publicKey: nodeInstitution.publicKey,
+        type: "INSTITUTION",
+        created: new Date().toISOString()
+      };
+    }
+    
+    // If wallet not found, create a basic info object
+    if (!walletInfo) {
+      walletInfo = {
+        id: `unknown-${publicKey.slice(0, 8)}`,
+        label: "Unknown Wallet",
+        publicKey: publicKey,
+        type: "INDIVIDUAL",
+        created: new Date().toISOString()
+      };
+    }
+    
     // Get certificates for this wallet safely using blockchain methods
     let walletCertificates = [];
     let walletStats = { totalCertificates: 0, issuedCertificates: 0, receivedCertificates: 0 };
     
     try {
       // Use blockchain methods for better performance and accuracy
-      walletCertificates = certificateBlockchain.getWalletCertificates(publicKey);
-      walletStats = certificateBlockchain.getWalletStats(publicKey);
+      if (typeof certificateBlockchain.getWalletCertificates === 'function') {
+        walletCertificates = certificateBlockchain.getWalletCertificates(publicKey);
+      }
+      if (typeof certificateBlockchain.getWalletStats === 'function') {
+        walletStats = certificateBlockchain.getWalletStats(publicKey);
+      }
     } catch (certError) {
       Logger.log(`Warning: Could not load certificates for wallet ${publicKey}: ${certError.message}`);
       // Fallback to manual search if blockchain methods fail
@@ -857,6 +910,11 @@ app.get("/wallets/:publicKey", (req, res) => {
           
           // Include certificates assigned to this wallet address
           if (cert.metadata && cert.metadata.recipientWalletAddress === publicKey) {
+            return true;
+          }
+          
+          // Also check recipientId field for backward compatibility
+          if (cert.recipientId === publicKey) {
             return true;
           }
           
@@ -889,8 +947,8 @@ app.get("/wallets/:publicKey", (req, res) => {
       Logger.log(`Warning: Could not load transactions for wallet ${publicKey}: ${txError.message}`);
     }
     
-    const walletInfo = {
-      publicKey,
+    const walletResponse = {
+      ...walletInfo,
       ...walletStats,
       certificates: walletCertificates,
       transactions: allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
@@ -899,7 +957,7 @@ app.get("/wallets/:publicKey", (req, res) => {
     
     res.json({
       success: true,
-      wallet: walletInfo
+      wallet: walletResponse
     });
   } catch (error) {
     Logger.log(`Error fetching wallet ${req.params.publicKey}: ${error.message}`);
