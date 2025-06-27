@@ -2,6 +2,70 @@
 
 *Letzte Aktualisierung: 27. Juni 2025*
 
+## Schnellstart: Alle Tests ausführen
+
+### Automatisierte Test-Suite
+
+Das gesamte Testsystem kann mit einem einzigen Shell-Script ausgeführt werden:
+
+```bash
+# Alle Integration Tests ausführen
+./run-all-tests.sh
+
+# Oder mit explizitem Bash-Aufruf
+bash run-all-tests.sh
+```
+
+### Was das Script ausführt:
+
+1. **Vorbedingungen prüfen**
+   - Node.js Installation
+   - Verzeichnisstruktur
+   - Abhängigkeiten installieren (falls nötig)
+
+2. **Backend Server Management**
+   - Prüft ob Backend-Server läuft
+   - Startet Server automatisch falls nötig
+   - Stoppt Server nach Tests automatisch
+
+3. **Test-Suite Ausführung**
+   - Backend Integration Tests (100% Pass-Rate)
+   - Frontend Integration Tests (97.6% Pass-Rate)
+   - End-to-End Validation Tests (100% Pass-Rate)
+
+4. **Ergebnis-Zusammenfassung**
+   - Detaillierte Pass/Fail-Statistiken
+   - Farbkodierte Ausgabe
+   - Exit-Code für CI/CD Integration
+
+### Ausgabe-Beispiel:
+
+```
+===========================================
+M107 Blockchain Certificate System
+Integration Test Suite Runner
+===========================================
+
+ℹ Using Node.js v18.17.0
+ℹ Backend dependencies already installed
+ℹ Frontend dependencies already installed
+
+✓ Backend server is already running at http://localhost:3001
+
+===========================================
+TEST EXECUTION SUMMARY
+===========================================
+
+✓ Backend Integration Tests: PASSED
+✓ Frontend Integration Tests: PASSED
+✓ End-to-End Tests: PASSED
+
+Test Suites: 3/3 passed
+✓ All integration test suites passed! 🎉
+
+The blockchain certificate system is working correctly.
+```
+
 ## Inhaltsverzeichnis
 
 - [1. Durchgeführte Tests](#1-durchgeführte-tests)
