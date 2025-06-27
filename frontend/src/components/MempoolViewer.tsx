@@ -3,12 +3,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePendingTransactions, useAutoMining } from "@/hooks/useCertificates";
-import { useConsensus } from "@/hooks/useBlockchain";
 import type { CertificateTransaction } from "@/types/certificates";
 import {
   Clock,
   RefreshCw,
-  Pickaxe,
   User,
   Building,
   BookOpen,
@@ -20,14 +18,12 @@ import {
 export const MempoolViewer: React.FC = () => {
   const { pendingTransactions, loading, error, refresh } =
     usePendingTransactions();
-  const { runConsensus } = useConsensus();
   const {
     status: autoMiningStatus,
     enableAutoMining,
     disableAutoMining,
     refresh: refreshAutoMining,
   } = useAutoMining();
-  const [miningLoading, setMiningLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Auto-refresh every 5 seconds when enabled
@@ -99,19 +95,6 @@ export const MempoolViewer: React.FC = () => {
     };
   };
 
-  const handleMineTransactions = async () => {
-    setMiningLoading(true);
-    try {
-      await runConsensus();
-      // Refresh after mining
-      setTimeout(() => refresh(), 1000);
-    } catch (error) {
-      console.error("Mining failed:", error);
-    } finally {
-      setMiningLoading(false);
-    }
-  };
-
   if (loading && pendingTransactions.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -157,14 +140,6 @@ export const MempoolViewer: React.FC = () => {
               />
               Refresh
             </Button>
-            <Button
-              onClick={handleMineTransactions}
-              disabled={miningLoading || pendingTransactions.length === 0}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              <Pickaxe className="h-4 w-4 mr-2" />
-              {miningLoading ? "Mining..." : "Mine Block"}
-            </Button>
           </div>
         </div>
 
@@ -208,13 +183,13 @@ export const MempoolViewer: React.FC = () => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center">
-                <Pickaxe className="h-8 w-8 text-orange-600" />
+                <Clock className="h-8 w-8 text-orange-600" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-600">
-                    Ready to Mine
+                    Auto Mining Status
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {pendingTransactions.length > 0 ? "Yes" : "No"}
+                    {autoMiningStatus?.enabled ? "Active" : "Inactive"}
                   </p>
                 </div>
               </div>
