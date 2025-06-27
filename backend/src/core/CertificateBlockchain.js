@@ -665,12 +665,22 @@ class CertificateBlockchain {
       }
 
       // Certificate is valid
+      const verificationHistory = this.verificationHistory.get(certificateId) || [];
+      
+      // Clean verification history to avoid circular references
+      const cleanHistory = verificationHistory.map(record => ({
+        verifier: record.verifier,
+        status: record.result?.status || 'UNKNOWN',
+        message: record.result?.message || 'No message',
+        timestamp: record.timestamp
+      }));
+
       return {
         valid: true,
         status: "VALID",
         message: "Certificate is valid and authentic",
         certificate: certificate,
-        verificationHistory: this.verificationHistory.get(certificateId) || [],
+        verificationHistory: cleanHistory,
       };
     } catch (error) {
       return {
