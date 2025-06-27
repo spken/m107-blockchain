@@ -19,7 +19,7 @@ import {
   useConnectionStatus,
   useNetwork,
 } from "@/hooks/useBlockchain";
-import { useCertificates, useCertificateIssuance, useCertificateVerification } from "@/hooks/useCertificates";
+import { useCertificates, useCertificateIssuance, useCertificateVerification, usePendingTransactions } from "@/hooks/useCertificates";
 import type { Certificate, CertificateFormData } from "@/types/certificates";
 import {
   Award,
@@ -78,6 +78,9 @@ function App() {
     success: issuanceSuccess,
     clearStatus: clearIssuanceStatus 
   } = useCertificateIssuance();
+
+  // Pending transactions (mempool)
+  const { pendingTransactions } = usePendingTransactions();
 
   // Auto-initialize network when connection is established
   useEffect(() => {
@@ -408,6 +411,14 @@ function App() {
             <TabsTrigger value="mempool" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               <span className="hidden sm:inline">Mempool</span>
+              {pendingTransactions.length > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="ml-1 px-1.5 py-0.5 text-xs bg-orange-100 text-orange-800"
+                >
+                  {pendingTransactions.length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="blockchain" className="flex items-center gap-2">
               <Blocks className="w-4 h-4" />
