@@ -11,11 +11,21 @@ import {
   Building,
   BookOpen,
   Calendar,
-  Hash,
   AlertCircle,
+  BarChart3,
+  Blocks,
+  CheckCircle,
 } from "lucide-react";
 
-export const MempoolViewer: React.FC = () => {
+interface MempoolViewerProps {
+  onNavigateToDashboard?: () => void;
+  onNavigateToBlockchain?: () => void;
+}
+
+export const MempoolViewer: React.FC<MempoolViewerProps> = ({
+  onNavigateToDashboard,
+  onNavigateToBlockchain,
+}) => {
   const { pendingTransactions, loading, error, refresh } =
     usePendingTransactions();
   const {
@@ -144,7 +154,7 @@ export const MempoolViewer: React.FC = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center">
@@ -155,25 +165,6 @@ export const MempoolViewer: React.FC = () => {
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {pendingTransactions.length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Hash className="h-8 w-8 text-green-600" />
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Transaction Fees
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {pendingTransactions.reduce(
-                      (sum, tx) => sum + (tx.fee || 0),
-                      0,
-                    )}
                   </p>
                 </div>
               </div>
@@ -257,10 +248,30 @@ export const MempoolViewer: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No Pending Transactions
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-6">
               The mempool is empty. New transactions will appear here when
               certificates are issued or other operations are performed.
             </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {onNavigateToDashboard && (
+                <Button
+                  onClick={onNavigateToDashboard}
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  View Certificates
+                </Button>
+              )}
+              {onNavigateToBlockchain && (
+                <Button
+                  onClick={onNavigateToBlockchain}
+                  className="flex items-center gap-2"
+                >
+                  <Blocks className="h-4 w-4" />
+                  View Blockchain
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -337,7 +348,11 @@ export const MempoolViewer: React.FC = () => {
                   {transaction.type !== "CERTIFICATE_ISSUANCE" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-gray-500">From Address</p>
+                        <p className="text-xs text-gray-500">
+                          {transaction.type === "CERTIFICATE_VERIFICATION" 
+                            ? "Verifier" 
+                            : "From Address"}
+                        </p>
                         <p className="font-mono text-sm">
                           {transaction.fromAddress
                             ? `${transaction.fromAddress.substring(0, 16)}...`
@@ -347,21 +362,33 @@ export const MempoolViewer: React.FC = () => {
 
                       {transaction.toAddress && (
                         <div>
-                          <p className="text-xs text-gray-500">To Address</p>
+                          <p className="text-xs text-gray-500">
+                            {transaction.type === "CERTIFICATE_VERIFICATION" 
+                              ? "Certificate Holder" 
+                              : "To Address"}
+                          </p>
                           <p className="font-mono text-sm">
                             {transaction.toAddress.substring(0, 16)}...
                           </p>
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {transaction.fee > 0 && (
-                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">
-                        Transaction Fee:{" "}
-                        <span className="font-medium">{transaction.fee}</span>
-                      </p>
+                      {transaction.type === "CERTIFICATE_VERIFICATION" && (
+                        <div className="md:col-span-2">
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-800">
+                                Certificate Verification Request
+                              </span>
+                            </div>
+                            <p className="text-xs text-green-700">
+                              This transaction represents a request to verify the authenticity 
+                              of a certificate on the blockchain.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>

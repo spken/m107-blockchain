@@ -56,7 +56,6 @@ function App() {
   // Blockchain and network state
   const {
     blocks,
-    loading: blocksLoading,
     refetch: refetchBlocks,
   } = useBlocks();
 
@@ -297,13 +296,24 @@ function App() {
 
   const handleVerifyCertificate = async (certificateId: string) => {
     if (!certificateId.trim()) return;
+    
+    // Switch to verify tab first
+    setActiveTab("verify");
+    
+    // Then verify the certificate
     await verifyCertificate(certificateId);
   };
 
-  const handleVerifySelectedCertificate = async () => {
-    if (selectedCertificate?.id) {
-      await verifyCertificate(selectedCertificate.id);
-    }
+  const handleIssueNewCertificate = () => {
+    setActiveTab("issue");
+  };
+
+  const handleNavigateToDashboard = () => {
+    setActiveTab("dashboard");
+  };
+
+  const handleNavigateToBlockchain = () => {
+    setActiveTab("blockchain");
   };
 
   return (
@@ -478,14 +488,6 @@ function App() {
               >
                 <Blocks className="w-4 h-4" />
                 <span className="hidden sm:inline">Blockchain</span>
-                {blocks.length > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800"
-                  >
-                    {blocks.length}
-                  </Badge>
-                )}
               </TabsTrigger>
               <TabsTrigger value="network" className="flex items-center gap-2">
                 <Network className="w-4 h-4" />
@@ -524,6 +526,7 @@ function App() {
                   onSearch={handleSearch}
                   onViewCertificate={handleViewCertificate}
                   onVerifyCertificate={handleVerifyCertificate}
+                  onIssueNewCertificate={handleIssueNewCertificate}
                 />
               </ErrorBoundary>
             </TabsContent>
@@ -729,32 +732,22 @@ function App() {
             {/* Mempool Tab */}
             <TabsContent value="mempool" className="space-y-6">
               <ErrorBoundary>
-                <MempoolViewer />
+                <MempoolViewer 
+                  onNavigateToDashboard={handleNavigateToDashboard}
+                  onNavigateToBlockchain={handleNavigateToBlockchain}
+                />
               </ErrorBoundary>
             </TabsContent>
 
             {/* Blockchain Tab */}
             <TabsContent value="blockchain" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Blockchain Overview
-                  </h2>
-                  <p className="text-gray-600">
-                    View blockchain structure and network consensus
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={refetchBlocks}
-                  disabled={blocksLoading}
-                >
-                  <RefreshCw
-                    className={`w-4 h-4 mr-2 ${blocksLoading ? "animate-spin" : ""}`}
-                  />
-                  Refresh
-                </Button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Blockchain Overview
+                </h2>
+                <p className="text-gray-600">
+                  View blockchain structure and network consensus
+                </p>
               </div>
               <ErrorBoundary>
                 <BlockchainOverview />
@@ -799,8 +792,6 @@ function App() {
               <CertificateViewer
                 certificate={selectedCertificate}
                 verification={verification || undefined}
-                onVerify={handleVerifySelectedCertificate}
-                verifying={verificationLoading}
                 onClose={() => setShowCertificateModal(false)}
               />
             </div>

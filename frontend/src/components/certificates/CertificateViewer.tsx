@@ -28,17 +28,13 @@ import { useCertificateHelpers } from "@/hooks/useCertificates";
 interface CertificateViewerProps {
   certificate: Certificate | null;
   verification?: CertificateVerification;
-  onVerify?: () => void;
   onClose?: () => void;
-  verifying?: boolean;
 }
 
 const CertificateViewer: React.FC<CertificateViewerProps> = ({
   certificate,
   verification,
-  onVerify,
   onClose,
-  verifying = false,
 }) => {
   const [activeTab, setActiveTab] = useState("details");
   const { getTypeLabel, formatDate, isExpired, getDaysUntilExpiration } =
@@ -111,11 +107,6 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
           <p className="text-gray-600">
             The requested certificate could not be loaded.
           </p>
-          {onClose && (
-            <Button onClick={onClose} className="mt-4">
-              Close
-            </Button>
-          )}
         </div>
       </div>
     );
@@ -150,21 +141,6 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                 {verification.status}
               </Badge>
             </div>
-          )}
-
-          {onVerify && (
-            <Button
-              onClick={onVerify}
-              disabled={verifying}
-              variant="outline"
-              aria-label={
-                verifying
-                  ? "Verifying certificate..."
-                  : "Verify certificate authenticity"
-              }
-            >
-              {verifying ? "Verifying..." : "Verify Certificate"}
-            </Button>
           )}
 
           {onClose && (
@@ -552,14 +528,8 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                     No Verification Data
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Click "Verify Certificate" to check the authenticity of this
-                    certificate.
+                    Use the verify tab to check the authenticity of this certificate.
                   </p>
-                  {onVerify && (
-                    <Button onClick={onVerify} disabled={verifying}>
-                      {verifying ? "Verifying..." : "Verify Certificate"}
-                    </Button>
-                  )}
                 </div>
               )}
             </CardContent>

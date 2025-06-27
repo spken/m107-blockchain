@@ -210,33 +210,105 @@ export function BlockchainOverview() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {blocks
                 .slice(-10)
                 .reverse()
                 .map((block: any, index: number) => (
                   <div
                     key={block.hash || index}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className="border rounded-lg p-4 space-y-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline">
-                        #{block.index !== undefined ? block.index : "N/A"}
-                      </Badge>
-                      <div>
-                        <div className="font-mono text-sm">
-                          {block.hash?.slice(0, 16)}...
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {block.transactions?.length || 0} transactions
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline">
+                          #{block.index !== undefined ? block.index : "N/A"}
+                        </Badge>
+                        <div>
+                          <div className="font-mono text-sm">
+                            {block.hash?.slice(0, 16)}...
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {block.transactions?.length || 0} transactions
+                          </div>
                         </div>
                       </div>
+                      <div className="text-xs text-gray-500">
+                        {block.timestamp
+                          ? new Date(block.timestamp).toLocaleDateString()
+                          : "N/A"}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {block.timestamp
-                        ? new Date(block.timestamp).toLocaleDateString()
-                        : "N/A"}
-                    </div>
+                    
+                    {/* Transaction Details */}
+                    {block.transactions && block.transactions.length > 0 && (
+                      <div className="space-y-2 border-t pt-3">
+                        <div className="text-sm font-medium text-gray-700">
+                          Transactions:
+                        </div>
+                        {block.transactions.map((tx: any, txIndex: number) => (
+                          <div
+                            key={tx.id || txIndex}
+                            className="bg-gray-50 rounded-md p-3 space-y-2"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-mono bg-white px-2 py-1 rounded">
+                                    {tx.id?.slice(0, 8)}...
+                                  </span>
+                                  {tx.payload?.type && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {tx.payload.type}
+                                    </Badge>
+                                  )}
+                                  {!tx.payload?.type && tx.type && (
+                                    <Badge 
+                                      variant="secondary" 
+                                      className={`text-xs ${
+                                        tx.type === "CERTIFICATE_VERIFICATION" 
+                                          ? "bg-green-100 text-green-800" 
+                                          : ""
+                                      }`}
+                                    >
+                                      {tx.type.replace(/_/g, " ")}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {tx.type === "CERTIFICATE_VERIFICATION" ? "Verifier" : "From"}: {tx.fromAddress || "System"}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {tx.type === "CERTIFICATE_VERIFICATION" ? "Certificate Holder" : "To"}: {tx.toAddress}
+                                </div>
+                                {tx.payload?.recipientName && (
+                                  <div className="text-xs text-gray-600">
+                                    Recipient: {tx.payload.recipientName}
+                                  </div>
+                                )}
+                                {tx.payload?.courseName && (
+                                  <div className="text-xs text-gray-600">
+                                    Course: {tx.payload.courseName}
+                                  </div>
+                                )}
+                                {tx.type === "CERTIFICATE_VERIFICATION" && (
+                                  <div className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded mt-1">
+                                    🔍 Certificate Verification Request
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-right text-xs text-gray-500">
+                                <div>
+                                  {tx.timestamp
+                                    ? new Date(tx.timestamp).toLocaleTimeString()
+                                    : "N/A"}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               {blocks.length === 0 && (

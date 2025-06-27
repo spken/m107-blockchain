@@ -28,6 +28,7 @@ interface CertificateDashboardProps {
   onSearch: (query: string) => void;
   onViewCertificate: (certificate: Certificate) => void;
   onVerifyCertificate: (certificateId: string) => void;
+  onIssueNewCertificate?: () => void;
   searchQuery?: string;
 }
 
@@ -37,6 +38,7 @@ const CertificateDashboard: React.FC<CertificateDashboardProps> = ({
   onSearch,
   onViewCertificate,
   onVerifyCertificate,
+  onIssueNewCertificate,
   searchQuery = "",
 }) => {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
@@ -198,11 +200,20 @@ const CertificateDashboard: React.FC<CertificateDashboardProps> = ({
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No certificates found
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {searchQuery
                 ? `No certificates match your search for "${searchQuery}"`
                 : "No certificates have been issued yet"}
             </p>
+            {!searchQuery && onIssueNewCertificate && (
+              <Button
+                onClick={onIssueNewCertificate}
+                className="mt-2"
+              >
+                <GraduationCap className="h-4 w-4 mr-2" />
+                Issue New Certificate
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

@@ -80,11 +80,6 @@ const WalletManager: React.FC<WalletManagerProps> = ({
     );
   };
 
-  const getTransactionColor = (transaction: WalletTransaction) => {
-    if (transaction.status === "PENDING") return "text-orange-600";
-    return transaction.type === "SENT" ? "text-red-600" : "text-green-600";
-  };
-
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -232,7 +227,6 @@ const WalletManager: React.FC<WalletManagerProps> = ({
               getTypeLabel={getTypeLabel}
               copyToClipboard={copyToClipboard}
               getTransactionIcon={getTransactionIcon}
-              getTransactionColor={getTransactionColor}
             />
           ) : (
             <Card>
@@ -259,7 +253,6 @@ interface WalletDetailsViewProps {
   getTypeLabel: (type: string) => string;
   copyToClipboard: (text: string, label: string) => void;
   getTransactionIcon: (transaction: WalletTransaction) => React.ReactNode;
-  getTransactionColor: (transaction: WalletTransaction) => string;
 }
 
 const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
@@ -270,7 +263,6 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
   getTypeLabel,
   copyToClipboard,
   getTransactionIcon,
-  getTransactionColor,
 }) => {
   const [detailsTab, setDetailsTab] = useState("info");
 
@@ -439,12 +431,6 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p
-                          className={`font-semibold ${getTransactionColor(transaction)}`}
-                        >
-                          {transaction.type === "SENT" ? "-" : "+"}
-                          {transaction.amount} coins
-                        </p>
                         <p className="text-sm text-gray-600">
                           {formatDate(transaction.timestamp)}
                         </p>
