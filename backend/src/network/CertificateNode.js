@@ -737,15 +737,67 @@ app.get("/consensus", async (req, res) => {
 // ==================== UTILITY ENDPOINTS ====================
 
 /**
- * Get network status
+ * Get network status with peer connectivity
  */
-app.get("/network", (req, res) => {
-  res.json({
-    currentNodeUrl: certificateBlockchain.currentNodeUrl,
-    networkNodes: certificateBlockchain.networkNodes,
-    institution: nodeInstitution ? nodeInstitution.getInfo() : null,
-    nodeId: nodeAddress,
-  });
+app.get("/network", async (req, res) => {
+  try {
+    // Check connectivity to each network node
+    const nodeStatuses = await Promise.allSettled(
+      certificateBlockchain.networkNodes.map(async (nodeUrl) => {
+        try {
+          const response = await rp({
+            uri: nodeUrl + "/ping",
+            method: "GET",
+            timeout: 2000,
+            resolveWithFullResponse: true
+          });
+          return {
+            url: nodeUrl,
+            status: response.statusCode === 200 ? "Online" : "Offline",
+            lastCheck: new Date().toISOString()
+          };
+        } catch (error) {
+          return {
+            url: nodeUrl,
+            status: "Offline",
+            lastCheck: new Date().toISOString(),
+            error: error.message
+          };
+        }
+      })
+    );
+
+    const peerStatuses = nodeStatuses.map(result => 
+      result.status === 'fulfilled' ? result.value : {
+        url: result.reason?.url || 'Unknown',
+        status: "Error",
+        lastCheck: new Date().toISOString(),
+        error: result.reason?.message || 'Connection failed'
+      }
+    );
+
+    res.json({
+      currentNodeUrl: certificateBlockchain.currentNodeUrl,
+      networkNodes: certificateBlockchain.networkNodes,
+      peerStatuses: peerStatuses,
+      institution: nodeInstitution ? nodeInstitution.getInfo() : null,
+      nodeId: nodeAddress,
+      totalPeers: certificateBlockchain.networkNodes.length,
+      connectedPeers: peerStatuses.filter(peer => peer.status === "Online").length
+    });
+  } catch (error) {
+    Logger.log(`Error getting network status: ${error.message}`);
+    res.json({
+      currentNodeUrl: certificateBlockchain.currentNodeUrl,
+      networkNodes: certificateBlockchain.networkNodes,
+      peerStatuses: [],
+      institution: nodeInstitution ? nodeInstitution.getInfo() : null,
+      nodeId: nodeAddress,
+      totalPeers: certificateBlockchain.networkNodes.length,
+      connectedPeers: 0,
+      error: error.message
+    });
+  }
 });
 
 /**
@@ -1174,6 +1226,18 @@ app.get("/wallets/:publicKey/transactions", (req, res) => {
       message: error.message,
     });
   }
+});
+
+/**
+ * Simple ping endpoint for connectivity checks
+ */
+app.get("/ping", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    nodeUrl: certificateBlockchain.currentNodeUrl,
+    institution: nodeInstitution ? nodeInstitution.name : null
+  });
 });
 
 // ==================== SERVER STARTUP ====================

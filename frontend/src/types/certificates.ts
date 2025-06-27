@@ -112,11 +112,22 @@ export interface BlockchainStats {
   institutionStats: Institution[];
 }
 
+export interface PeerStatus {
+  url: string;
+  status: "Online" | "Offline" | "Error";
+  lastCheck: string;
+  error?: string;
+}
+
 export interface NetworkStatus {
   currentNodeUrl: string;
   networkNodes: string[];
+  peerStatuses?: PeerStatus[];
   institution?: Institution;
   nodeId: string;
+  totalPeers?: number;
+  connectedPeers?: number;
+  error?: string;
 }
 
 // Form interfaces for creating certificates

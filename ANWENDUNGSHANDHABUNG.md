@@ -4,31 +4,6 @@
 
 **CertiChain** ist eine dezentrale Blockchain-Applikation zur Verwaltung von Bildungszertifikaten. Die Anwendung besteht aus einem **Backend** (Node.js Server auf Port 3001) und einem **Frontend** (React/Vite Webinterface).
 
-## Startseite und Navigation
-
-### Hauptnavigation
-
-Die Anwendung verfügt über 7 Hauptbereiche, die über Tabs zugänglich sind:
-
-| Tab                    | Icon | Beschreibung                    |
-| ---------------------- | ---- | ------------------------------- |
-| **Dashboard**          | 🏠   | Übersicht aller Zertifikate     |
-| **Issue Certificate**  | ➕   | Neue Zertifikate ausstellen     |
-| **Verify Certificate** | 🔍   | Zertifikate überprüfen          |
-| **Wallets**            | 🏆   | Wallet-Verwaltung               |
-| **Mempool**            | ⏰   | Warteschlange für Transaktionen |
-| **Blockchain**         | 🧱   | Blockchain-Übersicht            |
-| **Network**            | 🌐   | Netzwerk-Management             |
-
-### Header-Bereich
-
-Der Header zeigt wichtige Systeminformationen:
-
-- **CertiChain Logo** und Titel
-- **Institution-Badge** mit aktueller Bildungseinrichtung
-- **Netzwerk-Status** (Online/Offline/Initialisierung)
-- **Verbindungsfehler-Anzeige** mit Retry-Button
-
 ## Anwendung starten
 
 ### 1. Backend starten
@@ -59,6 +34,31 @@ npm run dev
 - Anzeige: "Initializing Blockchain Network"
 - Genesis-Block wird erstellt
 - Netzwerk-Peers werden konfiguriert
+
+## Startseite und Navigation
+
+### Hauptnavigation
+
+Die Anwendung verfügt über 7 Hauptbereiche, die über Tabs zugänglich sind:
+
+| Tab                    | Icon | Beschreibung                    |
+| ---------------------- | ---- | ------------------------------- |
+| **Dashboard**          | 🏠   | Übersicht aller Zertifikate     |
+| **Issue Certificate**  | ➕   | Neue Zertifikate ausstellen     |
+| **Verify Certificate** | 🔍   | Zertifikate überprüfen          |
+| **Wallets**            | 🏆   | Wallet-Verwaltung               |
+| **Mempool**            | ⏰   | Warteschlange für Transaktionen |
+| **Blockchain**         | 🧱   | Blockchain-Übersicht            |
+| **Network**            | 🌐   | Netzwerk-Management             |
+
+### Header-Bereich
+
+Der Header zeigt wichtige Systeminformationen:
+
+- **CertiChain Logo** und Titel
+- **Institution-Badge** mit aktueller Bildungseinrichtung
+- **Netzwerk-Status** (Online/Offline/Initialisierung)
+- **Verbindungsfehler-Anzeige** mit Retry-Button
 
 ## Workflow der Anwendung
 
