@@ -24,7 +24,7 @@ class ComprehensiveTestRunner {
   async checkServerHealth(url, maxAttempts = 5) {
     for (let i = 0; i < maxAttempts; i++) {
       try {
-        const response = await fetch(`${url}/health`);
+        const response = await fetch(`${url}/ping`);
         if (response.ok) {
           return true;
         }
@@ -36,32 +36,7 @@ class ComprehensiveTestRunner {
     return false;
   }
 
-  async startBackendNodes() {
-    this.log('Starting backend nodes...');
-    
-    return new Promise((resolve, reject) => {
-      const nodeProcess = spawn('npm', ['run', 'nodes'], {
-        cwd: this.backendDir,
-        stdio: 'pipe',
-        shell: process.platform === 'win32'
-      });
 
-      nodeProcess.stdout.on('data', (data) => {
-        if (data.toString().includes('Certificate Node running')) {
-          this.log('Backend nodes started successfully');
-        }
-      });
-
-      nodeProcess.stderr.on('data', (data) => {
-        this.log(`Backend stderr: ${data}`, 'WARN');
-      });
-
-      // Give nodes time to start
-      setTimeout(() => {
-        resolve(nodeProcess);
-      }, 5000);
-    });
-  }
 
   async runBackendTests() {
     this.log('=== Running Backend Integration Tests ===');
@@ -221,19 +196,12 @@ class ComprehensiveTestRunner {
     this.log('🚀 Starting Comprehensive Integration Test Suite');
     this.log('='.repeat(80));
     
-    let nodeProcess = null;
-    
     try {
-      // Start backend nodes
-      nodeProcess = await this.startBackendNodes();
-      
-      // Wait for nodes to be ready
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
       // Verify backend is accessible
       const backendReady = await this.checkServerHealth('http://localhost:3001');
       if (!backendReady) {
-        this.log('❌ Backend nodes failed to start properly', 'ERROR');
+        this.log('❌ Backend server not running at http://localhost:3001', 'ERROR');
+        this.log('Please start the backend server before running tests', 'ERROR');
         return false;
       }
       
@@ -272,15 +240,6 @@ class ComprehensiveTestRunner {
     } catch (error) {
       this.log(`❌ Test suite execution failed: ${error.message}`, 'ERROR');
       return false;
-    } finally {
-      // Cleanup: Kill node processes
-      if (nodeProcess) {
-        this.log('Stopping backend nodes...');
-        nodeProcess.kill('SIGTERM');
-        
-        // Give processes time to cleanup
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
     }
   }
 }
