@@ -293,7 +293,3 @@ Der Header zeigt wichtige Systeminformationen:
 2. Ports prüfen: 3001, 3002, 3003
 3. Backend mit `npm run nodes` neu starten
 4. ca. 30s für vollständige Initialisierung warten
-
----
-
-_Erstellt am 27. Juni 2025 | CertiChain v1.0_
