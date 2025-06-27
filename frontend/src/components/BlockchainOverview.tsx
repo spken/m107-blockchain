@@ -262,24 +262,34 @@ export function BlockchainOverview() {
                                       {tx.payload.type}
                                     </Badge>
                                   )}
-                                  {!tx.payload?.type && tx.type && (
+                                  {(!tx.payload?.type && tx.type) && (
                                     <Badge 
                                       variant="secondary" 
                                       className={`text-xs ${
                                         tx.type === "CERTIFICATE_VERIFICATION" 
                                           ? "bg-green-100 text-green-800" 
-                                          : ""
+                                          : tx.type === "CERTIFICATE_ISSUANCE"
+                                          ? "bg-blue-100 text-blue-800"
+                                          : "bg-gray-100 text-gray-800"
                                       }`}
                                     >
                                       {tx.type.replace(/_/g, " ")}
                                     </Badge>
                                   )}
+                                  {(!tx.payload?.type && !tx.type && tx.payload?.certificateId) && (
+                                    <Badge 
+                                      variant="secondary" 
+                                      className="text-xs bg-green-100 text-green-800"
+                                    >
+                                      CERTIFICATE VERIFICATION
+                                    </Badge>
+                                  )}
                                 </div>
                                 <div className="text-xs text-gray-600">
-                                  {tx.type === "CERTIFICATE_VERIFICATION" ? "Verifier" : "From"}: {tx.fromAddress || "System"}
+                                  {(tx.type === "CERTIFICATE_VERIFICATION" || tx.payload?.certificateId) ? "Verifier" : "From"}: {tx.fromAddress || "System"}
                                 </div>
                                 <div className="text-xs text-gray-600">
-                                  {tx.type === "CERTIFICATE_VERIFICATION" ? "Certificate Holder" : "To"}: {tx.toAddress}
+                                  {(tx.type === "CERTIFICATE_VERIFICATION" || tx.payload?.certificateId) ? "Certificate Holder" : "To"}: {tx.toAddress}
                                 </div>
                                 {tx.payload?.recipientName && (
                                   <div className="text-xs text-gray-600">
@@ -289,11 +299,6 @@ export function BlockchainOverview() {
                                 {tx.payload?.courseName && (
                                   <div className="text-xs text-gray-600">
                                     Course: {tx.payload.courseName}
-                                  </div>
-                                )}
-                                {tx.type === "CERTIFICATE_VERIFICATION" && (
-                                  <div className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded mt-1">
-                                    🔍 Certificate Verification Request
                                   </div>
                                 )}
                               </div>
