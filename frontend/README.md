@@ -1,5 +1,37 @@
 # Blockchain Frontend
 
+## Inhaltsverzeichnis
+
+- [Features](#features)
+- [Backend Integration](#backend-integration)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Development](#development)
+- [Build for Production](#build-for-production)
+- [Usage Guide](#usage-guide)
+  - [1. Overview Tab](#1-overview-tab)
+  - [2. Blocks Tab](#2-blocks-tab)
+  - [3. Wallets Tab](#3-wallets-tab)
+  - [4. Transactions Tab](#4-transactions-tab)
+  - [5. Mining Tab](#5-mining-tab)
+  - [6. Mempool Tab](#6-mempool-tab)
+  - [7. Network Tab](#7-network-tab)
+- [Backend Compatibility](#backend-compatibility)
+  - [Transaction Management](#transaction-management)
+  - [Mining Features](#mining-features)
+  - [Network Features](#network-features)
+  - [Mempool Features](#mempool-features)
+- [Technical Details](#technical-details)
+  - [Architecture](#architecture)
+  - [API Integration](#api-integration)
+  - [Error Handling](#error-handling)
+- [Environment Variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+- [Development Notes](#development-notes)
+
+---
+
 A modern React frontend for interacting with the blockchain network, built with Vite, Tailwind CSS, and shadcn/ui components.
 
 ## Features

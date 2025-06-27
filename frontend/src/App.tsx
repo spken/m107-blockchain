@@ -584,7 +584,7 @@ function App() {
                   <CardContent className="space-y-4">
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Enter certificate ID (e.g., cert_1234567890)"
+                        placeholder="Enter certificate ID (e.g., 1234567890)"
                         value={verifyingId}
                         onChange={(e) => setVerifyingId(e.target.value)}
                         className="flex-1"

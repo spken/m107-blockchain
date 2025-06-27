@@ -1,5 +1,51 @@
 # Umfassende Test-Dokumentation und Kritische Bewertung
 
+*Letzte Aktualisierung: 27. Juni 2025*
+
+## Inhaltsverzeichnis
+
+- [1. Durchgeführte Tests](#1-durchgeführte-tests)
+  - [1.1 Backend-Tests (Unit & Integration)](#11-backend-tests-unit--integration)
+  - [1.2 Frontend-Tests](#12-frontend-tests)
+  - [1.3 API-Integration Tests](#13-api-integration-tests)
+  - [1.4 Systemintegrations-Tests](#14-systemintegrations-tests)
+- [2. Sicherheitstests](#2-sicherheitstests)
+  - [2.1 Kryptographische Sicherheit](#21-kryptographische-sicherheit)
+  - [2.2 Access Control Tests](#22-access-control-tests)
+  - [2.3 Data Integrity Tests](#23-data-integrity-tests)
+- [3. Benutzerfreundlichkeits-Tests](#3-benutzerfreundlichkeits-tests)
+  - [3.1 Frontend UI/UX](#31-frontend-uiux)
+  - [3.2 API Usability](#32-api-usability)
+- [4. Performance-Tests](#4-performance-tests)
+  - [4.1 Frontend Performance](#41-frontend-performance)
+  - [4.2 Blockchain Performance](#42-blockchain-performance)
+  - [4.3 Speicher- und Ressourcen-Management](#43-speicher--und-ressourcen-management)
+- [5. Neue Test-Kategorien (Juni 2025)](#5-neue-test-kategorien-juni-2025)
+  - [5.1 Accessibility & Usability Tests](#51-accessibility--usability-tests)
+  - [5.2 Cross-Platform Kompatibilität](#52-cross-platform-kompatibilität)
+  - [5.3 Data Persistence & Recovery Tests](#53-data-persistence--recovery-tests)
+  - [5.4 Load & Stress Tests](#54-load--stress-tests)
+- [6. Kritische Bewertung der Anforderungserfüllung](#6-kritische-bewertung-der-anforderungserfüllung)
+  - [6.1 Erfüllte Kern-Anforderungen](#61-erfüllte-kern-anforderungen)
+  - [6.2 Teilweise erfüllte Anforderungen](#62-teilweise-erfüllte-anforderungen)
+  - [6.3 Nicht erfüllte Anforderungen](#63-nicht-erfüllte-anforderungen)
+- [7. Verbesserungsvorschläge](#7-verbesserungsvorschläge)
+  - [7.1 Kurzfristige Verbesserungen (1-3 Monate)](#71-kurzfristige-verbesserungen-1-3-monate)
+  - [7.2 Mittelfristige Verbesserungen (3-6 Monate)](#72-mittelfristige-verbesserungen-3-6-monate)
+  - [7.3 Langfristige Verbesserungen (6-12 Monate)](#73-langfristige-verbesserungen-6-12-monate)
+- [8. Alternative Lösungsansätze](#8-alternative-lösungsansätze)
+  - [8.1 Technologie-Alternativen](#81-technologie-alternativen)
+  - [8.2 Architektur-Alternativen](#82-architektur-alternativen)
+- [9. Fazit und Empfehlungen](#9-fazit-und-empfehlungen)
+  - [9.1 Gesamtbewertung](#91-gesamtbewertung)
+  - [9.2 Prioritisierte Handlungsempfehlungen](#92-prioritisierte-handlungsempfehlungen)
+  - [9.3 Test-Coverage Metrics (Aktuell)](#93-test-coverage-metrics-aktuell)
+  - [9.4 Schlussfolgerung](#94-schlussfolgerung)
+
+---
+
+## 1. Durchgeführte Testsassende Test-Dokumentation und Kritische Bewertung
+
 _Letzte Aktualisierung: 27. Juni 2025_
 
 ## 1. Durchgeführte Tests

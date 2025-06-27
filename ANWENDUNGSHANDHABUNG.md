@@ -1,5 +1,31 @@
 # Handhabung der CertiChain Applikation
 
+## Inhaltsverzeichnis
+
+- [Übersicht](#übersicht)
+- [Anwendung starten](#anwendung-starten)
+  - [1. Backend starten](#1-backend-starten)
+  - [2. Frontend starten](#2-frontend-starten)
+  - [3. Automatische Initialisierung](#3-automatische-initialisierung)
+- [Startseite und Navigation](#startseite-und-navigation)
+  - [Hauptnavigation](#hauptnavigation)
+  - [Header-Bereich](#header-bereich)
+- [Workflow der Anwendung](#workflow-der-anwendung)
+  - [Hauptfunktionen](#hauptfunktionen)
+  - [Typischer Arbeitsablauf](#typischer-arbeitsablauf)
+- [Automatisierte Prozesse](#automatisierte-prozesse)
+  - [Hintergrund-Automatisierung](#hintergrund-automatisierung)
+  - [Status-Anzeigen](#status-anzeigen)
+- [Fehlerbehebung](#fehlerbehebung)
+  - [Häufige Probleme und Lösungen](#häufige-probleme-und-lösungen)
+  - [Experten-Tipps](#experten-tipps)
+- [Besonderheiten](#besonderheiten)
+  - [Benutzerfreundlichkeit](#benutzerfreundlichkeit)
+  - [Sicherheit](#sicherheit)
+  - [Performance](#performance)
+
+---
+
 ## Übersicht
 
 **CertiChain** ist eine dezentrale Blockchain-Applikation zur Verwaltung von Bildungszertifikaten. Die Anwendung besteht aus einem **Backend** (Node.js Server auf Port 3001) und einem **Frontend** (React/Vite Webinterface).
@@ -235,7 +261,7 @@ Der Header zeigt wichtige Systeminformationen:
 **Ursache:** Falsche oder nicht existierende Zertifikat-ID
 **Lösung:**
 
-1. ID aus dem Dashboard kopieren (beginnt mit `cert_`)
+1. ID aus dem Dashboard kopieren
 2. Vollständige ID ohne Leerzeichen eingeben
 3. Falls Problem bestehen bleibt: Blockchain-Sync prüfen
 
@@ -266,7 +292,7 @@ Der Header zeigt wichtige Systeminformationen:
 1. Alle Node-Prozesse beenden
 2. Ports prüfen: 3001, 3002, 3003
 3. Backend mit `npm run nodes` neu starten
-4. 2-3 Minuten für vollständige Initialisierung warten
+4. ca. 30s für vollständige Initialisierung warten
 
 ---
 
