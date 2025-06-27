@@ -1,4 +1,4 @@
-# Handhabung der CertiChain Applikation
+# Handhabung: M107 Blockchain Certificate System
 
 ## Inhaltsverzeichnis
 
