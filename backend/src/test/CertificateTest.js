@@ -23,13 +23,13 @@ try {
   const certificate = new Certificate({
     recipientName: "John Doe",
     recipientId: "STU123456",
-    institutionName: "University of Technology", 
+    institutionName: "University of Technology",
     institutionPublicKey: institutionPublicKey,
     certificateType: "BACHELOR",
     courseName: "Computer Science",
     completionDate: "2024-05-15",
     grade: "A",
-    credentialLevel: "Bachelor of Science"
+    credentialLevel: "Bachelor of Science",
   });
 
   console.log("✅ Created certificate:", certificate.id);
@@ -48,7 +48,6 @@ try {
   console.log(`   - Type: ${certificate.certificateType}`);
   console.log(`   - Course: ${certificate.courseName}`);
   console.log(`   - Status: ${certificate.getStatus()}\n`);
-
 } catch (error) {
   console.error("❌ Certificate test failed:", error.message);
 }
@@ -60,21 +59,39 @@ try {
   const registry = new InstitutionRegistry();
 
   // Create institutions
-  const university = Institution.generateNew("University of Technology", "UNIVERSITY");
-  const vocational = Institution.generateNew("Professional Vocational School", "VOCATIONAL_SCHOOL");
-  const certification = Institution.generateNew("Global Certification Provider", "CERTIFICATION_PROVIDER");
+  const university = Institution.generateNew(
+    "University of Technology",
+    "UNIVERSITY",
+  );
+  const vocational = Institution.generateNew(
+    "Professional Vocational School",
+    "VOCATIONAL_SCHOOL",
+  );
+  const certification = Institution.generateNew(
+    "Global Certification Provider",
+    "CERTIFICATION_PROVIDER",
+  );
 
   // Register institutions
   registry.registerInstitution(university);
-  registry.registerInstitution(vocational);  
+  registry.registerInstitution(vocational);
   registry.registerInstitution(certification);
 
   console.log("✅ Registered 3 institutions");
 
   // Test authorization
-  console.log("✅ University authorized:", registry.isAuthorized(university.publicKey));
-  console.log("✅ Vocational authorized:", registry.isAuthorized(vocational.publicKey));
-  console.log("✅ Certification authorized:", registry.isAuthorized(certification.publicKey));
+  console.log(
+    "✅ University authorized:",
+    registry.isAuthorized(university.publicKey),
+  );
+  console.log(
+    "✅ Vocational authorized:",
+    registry.isAuthorized(vocational.publicKey),
+  );
+  console.log(
+    "✅ Certification authorized:",
+    registry.isAuthorized(certification.publicKey),
+  );
 
   const allInstitutions = registry.getAllInstitutions();
   console.log("✅ Total institutions:", allInstitutions.length);
@@ -84,7 +101,6 @@ try {
     console.log(`   ${index + 1}. ${inst.name} (${inst.type})`);
   });
   console.log();
-
 } catch (error) {
   console.error("❌ Institution registry test failed:", error.message);
 }
@@ -103,7 +119,7 @@ try {
   const testInstitution = Institution.createFromPrivateKey(
     "Test University",
     "UNIVERSITY",
-    testPrivateKey
+    testPrivateKey,
   );
 
   blockchain.institutionRegistry.registerInstitution(testInstitution);
@@ -121,10 +137,13 @@ try {
     courseName: "Data Science",
     completionDate: "2024-06-20",
     grade: "A+",
-    credentialLevel: "Master of Science"
+    credentialLevel: "Master of Science",
   });
 
-  const transaction = blockchain.issueCertificate(testCertificate, testPrivateKey);
+  const transaction = blockchain.issueCertificate(
+    testCertificate,
+    testPrivateKey,
+  );
   console.log("✅ Certificate issued, transaction created:", transaction.id);
 
   // Mine the transaction
@@ -143,7 +162,6 @@ try {
   console.log(`   - Valid certificates: ${stats.validCertificates}`);
   console.log(`   - Authorized validators: ${stats.authorizedValidators}`);
   console.log();
-
 } catch (error) {
   console.error("❌ Certificate blockchain test failed:", error.message);
 }
@@ -164,46 +182,66 @@ try {
     certificateType: "CERTIFICATION",
     courseName: "Blockchain Development",
     completionDate: "2024-06-25",
-    credentialLevel: "Professional Certificate"
+    credentialLevel: "Professional Certificate",
   });
 
   // Test certificate issuance transaction
   const issuanceTransaction = CertificateTransaction.createCertificateIssuance(
     publicKey,
-    certificate
+    certificate,
   );
-  console.log("✅ Created certificate issuance transaction:", issuanceTransaction.type);
+  console.log(
+    "✅ Created certificate issuance transaction:",
+    issuanceTransaction.type,
+  );
 
   // Test verification transaction
-  const verificationTransaction = CertificateTransaction.createCertificateVerification(
-    publicKey,
-    certificate.id,
-    { valid: true, status: "VALID" }
+  const verificationTransaction =
+    CertificateTransaction.createCertificateVerification(
+      publicKey,
+      certificate.id,
+      { valid: true, status: "VALID" },
+    );
+  console.log(
+    "✅ Created certificate verification transaction:",
+    verificationTransaction.type,
   );
-  console.log("✅ Created certificate verification transaction:", verificationTransaction.type);
 
   // Test revocation transaction
-  const revocationTransaction = CertificateTransaction.createCertificateRevocation(
-    publicKey,
-    certificate.id,
-    "Fraudulent application detected"
+  const revocationTransaction =
+    CertificateTransaction.createCertificateRevocation(
+      publicKey,
+      certificate.id,
+      "Fraudulent application detected",
+    );
+  console.log(
+    "✅ Created certificate revocation transaction:",
+    revocationTransaction.type,
   );
-  console.log("✅ Created certificate revocation transaction:", revocationTransaction.type);
 
   // Test mining reward transaction
   const miningRewardTransaction = CertificateTransaction.createMiningReward(
     publicKey,
-    10
+    10,
   );
-  console.log("✅ Created mining reward transaction:", miningRewardTransaction.type);
+  console.log(
+    "✅ Created mining reward transaction:",
+    miningRewardTransaction.type,
+  );
 
   console.log("📋 Transaction summaries:");
-  [issuanceTransaction, verificationTransaction, revocationTransaction, miningRewardTransaction].forEach((tx, index) => {
+  [
+    issuanceTransaction,
+    verificationTransaction,
+    revocationTransaction,
+    miningRewardTransaction,
+  ].forEach((tx, index) => {
     const summary = tx.getSummary();
-    console.log(`   ${index + 1}. ${summary.type} - ${summary.id.substring(0, 8)}...`);
+    console.log(
+      `   ${index + 1}. ${summary.type} - ${summary.id.substring(0, 8)}...`,
+    );
   });
   console.log();
-
 } catch (error) {
   console.error("❌ Transaction types test failed:", error.message);
 }
@@ -218,8 +256,8 @@ try {
   const institutions = [
     { name: "University A", type: "UNIVERSITY" },
     { name: "Vocational School B", type: "VOCATIONAL_SCHOOL" },
-    { name: "Certification Provider C", type: "CERTIFICATION_PROVIDER" }
-  ].map(config => {
+    { name: "Certification Provider C", type: "CERTIFICATION_PROVIDER" },
+  ].map((config) => {
     const institution = Institution.generateNew(config.name, config.type);
     blockchain.institutionRegistry.registerInstitution(institution);
     blockchain.addAuthorizedValidator(institution.publicKey);
@@ -230,7 +268,7 @@ try {
 
   // Issue certificates from different institutions
   const certificates = [];
-  
+
   for (let i = 0; i < institutions.length; i++) {
     const institution = institutions[i];
     const certificate = new Certificate({
@@ -239,14 +277,21 @@ try {
       institutionName: institution.name,
       institutionPublicKey: institution.publicKey,
       certificateType: ["BACHELOR", "DIPLOMA", "CERTIFICATION"][i],
-      courseName: [`Computer Science ${i + 1}`, `Engineering ${i + 1}`, `Project Management ${i + 1}`][i],
+      courseName: [
+        `Computer Science ${i + 1}`,
+        `Engineering ${i + 1}`,
+        `Project Management ${i + 1}`,
+      ][i],
       completionDate: new Date(2024, 5, 15 + i).toISOString(),
-      credentialLevel: ["Bachelor", "Diploma", "Professional"][i]
+      credentialLevel: ["Bachelor", "Diploma", "Professional"][i],
     });
 
-    const transaction = blockchain.issueCertificate(certificate, institution.privateKey);
+    const transaction = blockchain.issueCertificate(
+      certificate,
+      institution.privateKey,
+    );
     certificates.push(certificate);
-    
+
     console.log(`✅ Certificate ${i + 1} issued by ${institution.name}`);
   }
 
@@ -257,12 +302,18 @@ try {
   // Verify all certificates
   certificates.forEach((cert, index) => {
     const verification = blockchain.verifyCertificate(cert.id);
-    console.log(`✅ Certificate ${index + 1} verification: ${verification.status}`);
+    console.log(
+      `✅ Certificate ${index + 1} verification: ${verification.status}`,
+    );
   });
 
   // Test certificate search
   const searchResults = blockchain.searchCertificates("Computer");
-  console.log("✅ Search for 'Computer' found:", searchResults.length, "certificates");
+  console.log(
+    "✅ Search for 'Computer' found:",
+    searchResults.length,
+    "certificates",
+  );
 
   // Final statistics
   const finalStats = blockchain.getStatistics();
@@ -272,7 +323,6 @@ try {
   console.log(`   - Certificates: ${finalStats.totalCertificates}`);
   console.log(`   - Institutions: ${finalStats.totalInstitutions}`);
   console.log();
-
 } catch (error) {
   console.error("❌ End-to-end test failed:", error.message);
 }

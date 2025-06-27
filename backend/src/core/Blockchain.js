@@ -1,12 +1,12 @@
 /**
  * DEPRECATED: Generic Blockchain Implementation
- * 
+ *
  * This file is kept for reference but should not be used in production.
  * The project uses CertificateBlockchain.js for the educational certificate system.
- * 
+ *
  * This generic blockchain implementation includes currency-like features
  * (balances, amounts, fees) which are not relevant for certificate management.
- * 
+ *
  * Use CertificateBlockchain.js instead for all certificate-related operations.
  */
 
@@ -15,7 +15,9 @@ const Transaction = require("./Transaction");
 
 class Blockchain {
   constructor() {
-    console.warn("DEPRECATED: Use CertificateBlockchain instead for certificate management");
+    console.warn(
+      "DEPRECATED: Use CertificateBlockchain instead for certificate management",
+    );
     this.chain = [this.createGenesisBlock()];
     this.pendingTransactions = [];
     this.difficulty = 4;

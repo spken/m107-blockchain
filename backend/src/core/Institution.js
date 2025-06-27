@@ -35,7 +35,7 @@ class Institution {
     const keyPair = ec.genKeyPair();
     const publicKey = keyPair.getPublic("hex");
     const privateKey = keyPair.getPrivate("hex");
-    
+
     const institution = new Institution(name, type, publicKey, true);
     institution.privateKey = privateKey; // Store for initial setup only
     return institution;
@@ -74,7 +74,7 @@ class Institution {
       authorized: this.authorized,
       registrationDate: this.registrationDate,
       certificatesIssued: this.certificatesIssued,
-      lastActivity: this.lastActivity
+      lastActivity: this.lastActivity,
     };
   }
 
@@ -86,7 +86,9 @@ class Institution {
       this.name &&
       this.name.length > 0 &&
       this.type &&
-      ["UNIVERSITY", "VOCATIONAL_SCHOOL", "CERTIFICATION_PROVIDER"].includes(this.type) &&
+      ["UNIVERSITY", "VOCATIONAL_SCHOOL", "CERTIFICATION_PROVIDER"].includes(
+        this.type,
+      ) &&
       this.publicKey &&
       this.publicKey.length === 130
     );
@@ -112,18 +114,18 @@ class InstitutionRegistry {
         name: "University of Technology",
         type: "UNIVERSITY",
         // This would be a real public key in production
-        publicKey: "049c9...example..." // Placeholder
+        publicKey: "049c9...example...", // Placeholder
       },
       {
         name: "Professional Vocational School",
         type: "VOCATIONAL_SCHOOL",
-        publicKey: "04abc...example..." // Placeholder
+        publicKey: "04abc...example...", // Placeholder
       },
       {
         name: "Global Certification Provider",
         type: "CERTIFICATION_PROVIDER",
-        publicKey: "04def...example..." // Placeholder
-      }
+        publicKey: "04def...example...", // Placeholder
+      },
     ];
 
     // In a real implementation, these would be loaded from configuration
@@ -161,7 +163,7 @@ class InstitutionRegistry {
    * Get all institutions
    */
   getAllInstitutions() {
-    return Array.from(this.institutions.values()).map(inst => inst.getInfo());
+    return Array.from(this.institutions.values()).map((inst) => inst.getInfo());
   }
 
   /**
@@ -193,8 +195,8 @@ class InstitutionRegistry {
    */
   getInstitutionsByType(type) {
     return Array.from(this.institutions.values())
-      .filter(inst => inst.type === type)
-      .map(inst => inst.getInfo());
+      .filter((inst) => inst.type === type)
+      .map((inst) => inst.getInfo());
   }
 
   /**

@@ -1,11 +1,13 @@
 # Umfassende Test-Dokumentation und Kritische Bewertung
-*Letzte Aktualisierung: 27. Juni 2025*
+
+_Letzte Aktualisierung: 27. Juni 2025_
 
 ## 1. Durchgeführte Tests
 
 ### 1.1 Backend-Tests (Unit & Integration)
 
 #### 1.1.1 Certificate Creation and Validation Tests
+
 **Status: ✅ ERFOLGREICH**
 
 ```
@@ -18,12 +20,14 @@ Testresultate (Neueste Ausführung: 27.06.2025):
 ```
 
 **Getestete Funktionalitäten:**
+
 - Kryptographische Schlüsselgenerierung (ECDSA secp256k1)
 - Zertifikats-Erstellung mit allen erforderlichen Feldern
 - Digitale Signatur-Implementierung
 - Hash-Berechnung und Integritätsprüfung
 
 #### 1.1.2 Institution Registry Tests
+
 **Status: ✅ ERFOLGREICH**
 
 ```
@@ -36,12 +40,14 @@ Testresultate:
 ```
 
 **Validierte Bereiche:**
+
 - Institutions-Registry-Funktionalität
 - Autorisierungs-Mechanismus für PoA
 - Multi-Institution-Support
 - Institutionstyp-Verwaltung
 
 #### 1.1.3 Blockchain Integration Tests
+
 **Status: ✅ ERFOLGREICH**
 
 ```
@@ -57,12 +63,14 @@ Testresultate (Neueste Ausführung: 27.06.2025):
 ```
 
 **Validierte Komponenten:**
+
 - Blockchain-Integration
 - Proof of Authority Mining
 - Transaktions-Processing
 - Block-Validierung
 
 #### 1.1.4 Transaction Types Tests
+
 **Status: ⚠️ TEILWEISE ERFOLGREICH**
 
 ```
@@ -76,6 +84,7 @@ Testresultate (Neueste Ausführung: 27.06.2025):
 **Bewertung:** Der Fehler bei Mining Rewards ist korrekt, da die Bildungs-Blockchain bewusst keine Kryptowährungs-Features implementiert.
 
 #### 1.1.5 End-to-End Certificate Lifecycle Tests
+
 **Status: ✅ ERFOLGREICH**
 
 ```
@@ -95,6 +104,7 @@ Testresultate (Neueste Ausführung: 27.06.2025):
 ### 1.2 Frontend-Tests
 
 #### 1.2.1 Build-Tests
+
 **Status: ✅ ERFOLGREICH**
 
 ```
@@ -106,14 +116,17 @@ Build-Resultate (Neueste Ausführung: 27.06.2025):
 ```
 
 **Bundle-Analyse (Aktualisiert):**
+
 - HTML: 0.48 kB (gzip: 0.31 kB)
-- CSS: 31.18 kB (gzip: 6.47 kB) 
+- CSS: 31.18 kB (gzip: 6.47 kB)
 - JavaScript: 312.43 kB (gzip: 87.60 kB)
 
 #### 1.2.2 UI/UX Komponenten-Tests
+
 **Status: ✅ FUNKTIONAL**
 
 **Validierte Komponenten:**
+
 - ✅ Dashboard mit Zertifikats-Übersicht
 - ✅ Certificate Issuance Form
 - ✅ Certificate Verification Interface
@@ -126,9 +139,11 @@ Build-Resultate (Neueste Ausführung: 27.06.2025):
 - ✅ Error Handling & User Feedback
 
 #### 1.2.3 Frontend-Backend Integration
+
 **Status: ✅ OPERATIV**
 
 **Getestete Integration-Punkte:**
+
 - ✅ API-Verbindung zu Backend (Port 3001)
 - ✅ Automatische Netzwerk-Initialisierung
 - ✅ Live-Updates alle 30 Sekunden
@@ -138,13 +153,15 @@ Build-Resultate (Neueste Ausführung: 27.06.2025):
 - ✅ Error-Recovery-Mechanismen
 
 ### 1.3 API-Integration Tests
+
 **Status: ⚠️ TEILWEISE ERFOLGREICH**
 
 **Verfügbare API-Endpunkte (Getestet):**
+
 ```bash
 # Zertifikats-Management
 POST   /certificates           ✅ Funktional
-GET    /certificates           ✅ Funktional  
+GET    /certificates           ✅ Funktional
 GET    /certificates/:id       ✅ Funktional
 POST   /certificates/:id/verify ✅ Funktional
 
@@ -164,15 +181,19 @@ GET    /mempool/pending       ✅ Funktional
 ```
 
 **Identifizierte Probleme:**
+
 - ❌ API-Test (Test.js) schlägt fehl bei fehlendem Backend
 - ⚠️ Keine automatisierte API-Test-Suite
 - ⚠️ Fehlende API-Dokumentation (OpenAPI/Swagger)
 
 ### 1.4 Systemintegrations-Tests
+
 **Status: ✅ ERFOLGREICH**
 
 #### 1.4.1 Full-Stack Integration
+
 **Testresultate:**
+
 ```bash
 Frontend (Port 5173) ↔ Backend (Port 3001) ↔ Blockchain
 ✅ Certificate Issuance Workflow
@@ -183,7 +204,9 @@ Frontend (Port 5173) ↔ Backend (Port 3001) ↔ Blockchain
 ```
 
 #### 1.4.2 Multi-Browser Kompatibilität
+
 **Status: ✅ VALIDIERT**
+
 - ✅ Chrome/Chromium (Primär getestet)
 - ✅ Firefox (Kompatibel)
 - ✅ Edge (Kompatibel)
@@ -192,25 +215,28 @@ Frontend (Port 5173) ↔ Backend (Port 3001) ↔ Blockchain
 ## 2. Sicherheitstests
 
 ### 2.1 Kryptographische Sicherheit
+
 **Status: ✅ VALIDIERT**
 
 **Implementierte Sicherheitsmaßnahmen:**
+
 - ECDSA mit secp256k1 Kurve (Bitcoin-Standard)
 - SHA-256 Hashing für Block-Integrität
 - Digitale Signaturen für Zertifikats-Authentifizierung
 - Private Key Validierung vor Signierung
 
 **Code-Analyse:**
+
 ```javascript
 // Sicherheitsvalidierung in Certificate.js
 signCertificate(institutionPrivateKey) {
   if (!institutionPrivateKey) {
     throw new Error("Institution private key is required for signing");
   }
-  
+
   const keyPair = ec.keyFromPrivate(institutionPrivateKey);
   const publicKeyFromPrivate = keyPair.getPublic("hex");
-  
+
   if (publicKeyFromPrivate !== this.institutionPublicKey) {
     throw new Error("Private key does not match institution's public key");
   }
@@ -219,17 +245,21 @@ signCertificate(institutionPrivateKey) {
 ```
 
 ### 2.2 Access Control Tests
+
 **Status: ✅ IMPLEMENTIERT**
 
 **Autorisierungs-Mechanismen:**
+
 - Proof of Authority: Nur autorisierte Institutionen können validieren
 - Institution Registry: Zentrale Verwaltung von Berechtigungen
 - Transaction Validation: Überprüfung der Berechtigung vor Processing
 
 ### 2.3 Data Integrity Tests
+
 **Status: ✅ BESTANDEN**
 
 **Validierte Bereiche:**
+
 - Hash-Chain-Integrität zwischen Blöcken
 - Transaktions-Hash-Validierung
 - Zertifikats-Signatur-Verifikation
@@ -238,23 +268,28 @@ signCertificate(institutionPrivateKey) {
 ## 3. Benutzerfreundlichkeits-Tests
 
 ### 3.1 Frontend UI/UX
+
 **Status: ✅ IMPLEMENTIERT**
 
 **Positive Aspekte:**
+
 - Responsive Design mit TailwindCSS
 - Komponentenbasierte Architektur
 - TypeScript für Type Safety
 - Moderne UI-Komponenten (Shadcn/UI Pattern)
 
 **Identifizierte Verbesserungsbereiche:**
+
 - Keine automatisierten UI-Tests
 - Fehlende Accessibility-Tests
 - Keine Performance-Metriken
 
 ### 3.2 API Usability
+
 **Status: ⚠️ VERBESSERUNGSBEDARF**
 
 **Herausforderungen:**
+
 - Komplexe Backend-Setup-Prozedur
 - Manuelle Node-Konfiguration erforderlich
 - Fehlende Entwickler-Dokumentation für API-Endpunkte
@@ -262,23 +297,28 @@ signCertificate(institutionPrivateKey) {
 ## 4. Performance-Tests
 
 ### 4.1 Frontend Performance
+
 **Status: ✅ OPTIMIERT**
 
 **Bundle-Analyse:**
+
 - Gute Komprimierungsrate (312.27 kB → 87.56 kB gzip)
 - Effiziente Build-Zeit (5.72s)
 - Moderne Build-Tools (Vite)
 
 ### 4.2 Blockchain Performance
+
 **Status: ✅ EFFIZIENT**
 
 **Proof of Authority Vorteile:**
+
 - Schnelle Block-Zeiten (< 2 Sekunden)
 - Geringer Energieverbrauch (keine PoW)
 - Deterministische Konsensus-Zeit
 - Optimiert für Bildungszertifikate
 
 **Performance-Metriken (Gemessen):**
+
 ```bash
 Block Mining Zeit:        ~500ms - 2s
 Certificate Verification: <200ms
@@ -289,14 +329,17 @@ API Response Time:        <50ms (lokaler Test)
 ```
 
 ### 4.3 Speicher- und Ressourcen-Management
+
 **Status: ✅ OPTIMIERT**
 
 **Frontend Ressourcen:**
+
 - Bundle Size: 312.43 kB → 87.60 kB (gzip, 72% Kompression)
 - Memory Usage: ~50MB (Browser)
 - CPU Usage: Minimal (Event-driven)
 
 **Backend Ressourcen:**
+
 - Memory Usage: ~30MB (Node.js)
 - Blockchain Storage: In-Memory (Development)
 - API Throughput: ~1000 req/s (lokal)
@@ -304,9 +347,11 @@ API Response Time:        <50ms (lokaler Test)
 ## 5. Neue Test-Kategorien (Juni 2025)
 
 ### 5.1 Accessibility & Usability Tests
+
 **Status: ⚠️ TEILWEISE IMPLEMENTIERT**
 
 **Accessibility Features:**
+
 - ✅ Keyboard Navigation unterstützt
 - ✅ Screen Reader kompatible HTML-Struktur
 - ✅ Hoher Kontrast (WCAG 2.1 AA konform)
@@ -315,15 +360,18 @@ API Response Time:        <50ms (lokaler Test)
 - ❌ Keine Voice-over Tests durchgeführt
 
 **Usability Erkenntnisse:**
+
 - ✅ Intuitive Navigation (7-Tab-System)
 - ✅ Klare visueller Feedback bei Aktionen
 - ✅ Verständliche Fehlermeldungen
 - ⚠️ Steile Lernkurve für Blockchain-Konzepte
 
 ### 5.2 Cross-Platform Kompatibilität
+
 **Status: ✅ BREIT KOMPATIBEL**
 
 **Getestete Umgebungen:**
+
 ```bash
 Operating Systems:
 ✅ Windows 11 (Primär)
@@ -344,15 +392,18 @@ Browsers:
 ```
 
 ### 5.3 Data Persistence & Recovery Tests
+
 **Status: ❌ UNVOLLSTÄNDIG**
 
 **Aktuelle Situation:**
+
 - ❌ In-Memory Storage (Daten verloren bei Neustart)
 - ❌ Keine Backup-Mechanismen
 - ❌ Keine Disaster Recovery-Pläne
 - ❌ Fehlende Datenbank-Integration
 
 **Empfohlene Verbesserungen:**
+
 ```javascript
 // Persistenz-Layer Implementation
 class PersistentBlockchain {
@@ -360,11 +411,11 @@ class PersistentBlockchain {
     this.db = new Database(dbConfig);
     this.blockchain = new CertificateBlockchain();
   }
-  
+
   async saveBlock(block) {
     await this.db.blocks.insert(block);
   }
-  
+
   async loadBlockchain() {
     const blocks = await this.db.blocks.findAll();
     this.blockchain.chain = blocks;
@@ -373,9 +424,11 @@ class PersistentBlockchain {
 ```
 
 ### 5.4 Load & Stress Tests
+
 **Status: ⚠️ BASIC TESTING**
 
 **Durchgeführte Tests:**
+
 ```bash
 Concurrent Users:     10 (Simuliert)
 Certificates/Second:  ~5-10 (Lokal)
@@ -384,6 +437,7 @@ Network Latency:      <50ms (LAN)
 ```
 
 **Stress-Test-Szenarien:**
+
 - ✅ 100 Zertifikate in schneller Folge
 - ✅ 10 gleichzeitige API-Requests
 - ❌ Keine Tests mit 1000+ Zertifikaten
@@ -391,6 +445,7 @@ Network Latency:      <50ms (LAN)
 - ❌ Keine Memory-Leak-Tests
 
 **Identifizierte Limits:**
+
 - Memory Usage steigt linear mit Blockchain-Größe
 - Frontend wird langsamer bei >500 Zertifikaten
 - Keine Rate-Limiting implementiert
@@ -398,19 +453,25 @@ Network Latency:      <50ms (LAN)
 ### 5.1 Erfüllte Kern-Anforderungen ✅
 
 #### 5.1.1 Fälschungssicherheit
+
 **Status: VOLLSTÄNDIG ERFÜLLT**
+
 - Kryptographische Signaturen implementiert
 - Unveränderliche Blockchain-Storage
 - Hash-basierte Integritätsprüfung
 
 #### 5.1.2 Sofortige Verifikation
+
 **Status: TECHNISCH ERFÜLLT**
+
 - API-Endpunkte für Echtzeit-Verifikation vorhanden
 - Effiziente Datenstrukturen (O(1) Lookup)
 - PoA für schnelle Konsensus-Zeiten
 
 #### 5.1.3 Dezentrale Verwaltung
+
 **Status: KONZEPTUELL ERFÜLLT**
+
 - 3-Node-Netzwerk implementiert
 - Peer-to-Peer-Kommunikation vorhanden
 - Keine zentrale Autorität erforderlich
@@ -418,13 +479,17 @@ Network Latency:      <50ms (LAN)
 ### 5.2 Teilweise erfüllte Anforderungen ⚠️
 
 #### 5.2.1 Internationale Kompatibilität
+
 **Status: GRUNDLAGEN VORHANDEN**
+
 - API-basierte Architektur für Integration
 - JSON-Format für Interoperabilität
 - **Fehlt:** Standards-Compliance (W3C, EU-Standards)
 
 #### 5.2.2 DSGVO-Compliance
+
 **Status: BASIC IMPLEMENTATION**
+
 - Minimal Data Approach implementiert
 - **Fehlt:** Recht auf Vergessenwerden
 - **Fehlt:** Consent Management System
@@ -432,14 +497,18 @@ Network Latency:      <50ms (LAN)
 ### 5.3 Nicht erfüllte Anforderungen ❌
 
 #### 5.3.1 Produktions-Bereitschaft
+
 **Identifizierte Lücken:**
+
 - Keine persistente Datenbank-Integration
 - Fehlende Container-Deployment-Strategie
 - Keine Monitoring/Logging-Infrastruktur
 - Fehlende Backup/Recovery-Mechanismen
 
 #### 5.3.2 Skalierbarkeit
+
 **Limitierungen:**
+
 - In-Memory-Storage (nicht persistent)
 - Keine Load-Balancing-Implementierung
 - Fehlende Horizontal-Scaling-Strategie
@@ -449,19 +518,25 @@ Network Latency:      <50ms (LAN)
 ### 6.1 Erfüllte Kern-Anforderungen ✅
 
 #### 6.1.1 Fälschungssicherheit
+
 **Status: VOLLSTÄNDIG ERFÜLLT**
+
 - Kryptographische Signaturen implementiert
 - Unveränderliche Blockchain-Storage
 - Hash-basierte Integritätsprüfung
 
 #### 6.1.2 Sofortige Verifikation
+
 **Status: TECHNISCH ERFÜLLT**
+
 - API-Endpunkte für Echtzeit-Verifikation vorhanden
 - Effiziente Datenstrukturen (O(1) Lookup)
 - PoA für schnelle Konsensus-Zeiten
 
 #### 6.1.3 Dezentrale Verwaltung
+
 **Status: KONZEPTUELL ERFÜLLT**
+
 - 3-Node-Netzwerk implementiert
 - Peer-to-Peer-Kommunikation vorhanden
 - Keine zentrale Autorität erforderlich
@@ -469,13 +544,17 @@ Network Latency:      <50ms (LAN)
 ### 6.2 Teilweise erfüllte Anforderungen ⚠️
 
 #### 6.2.1 Internationale Kompatibilität
+
 **Status: GRUNDLAGEN VORHANDEN**
+
 - API-basierte Architektur für Integration
 - JSON-Format für Interoperabilität
 - **Fehlt:** Standards-Compliance (W3C, EU-Standards)
 
 #### 6.2.2 DSGVO-Compliance
+
 **Status: BASIC IMPLEMENTATION**
+
 - Minimal Data Approach implementiert
 - **Fehlt:** Recht auf Vergessenwerden
 - **Fehlt:** Consent Management System
@@ -483,14 +562,18 @@ Network Latency:      <50ms (LAN)
 ### 6.3 Nicht erfüllte Anforderungen ❌
 
 #### 6.3.1 Produktions-Bereitschaft
+
 **Identifizierte Lücken:**
+
 - Keine persistente Datenbank-Integration
 - Fehlende Container-Deployment-Strategie
 - Keine Monitoring/Logging-Infrastruktur
 - Fehlende Backup/Recovery-Mechanismen
 
 #### 6.3.2 Skalierbarkeit
+
 **Limitierungen:**
+
 - In-Memory-Storage (nicht persistent)
 - Keine Load-Balancing-Implementierung
 - Fehlende Horizontal-Scaling-Strategie
@@ -500,6 +583,7 @@ Network Latency:      <50ms (LAN)
 ### 6.1 Kurzfristige Verbesserungen (1-3 Monate)
 
 #### 6.1.1 Test-Infrastruktur
+
 ```bash
 # Empfohlene Implementierung
 # Docker-basierte Test-Umgebung
@@ -510,11 +594,13 @@ docker-compose.test.yml:
 ```
 
 #### 6.1.2 API-Dokumentation
+
 - OpenAPI/Swagger-Spezifikation
 - Interactive API-Explorer
 - Code-Beispiele für Integration
 
 #### 6.1.3 Error Handling Enhancement
+
 ```typescript
 // Verbesserte Error-Behandlung
 class CertificateAPIError extends Error {
@@ -522,7 +608,7 @@ class CertificateAPIError extends Error {
     message: string,
     public code: string,
     public statusCode: number,
-    public details?: any
+    public details?: any,
   ) {
     super(message);
   }
@@ -532,17 +618,18 @@ class CertificateAPIError extends Error {
 ### 6.2 Mittelfristige Verbesserungen (3-6 Monate)
 
 #### 6.2.1 Persistenz-Layer
+
 ```javascript
 // Database Integration
 class CertificateDatabase {
   constructor(dbConfig) {
     this.db = new PostgreSQL(dbConfig);
   }
-  
+
   async storeCertificate(certificate) {
     // Persistent storage implementation
   }
-  
+
   async getCertificate(id) {
     // Database retrieval
   }
@@ -550,11 +637,13 @@ class CertificateDatabase {
 ```
 
 #### 6.2.2 Advanced Security
+
 - Multi-Signature-Unterstützung für kritische Operationen
 - Hardware Security Module (HSM) Integration
 - Audit-Trail für alle Transaktionen
 
 #### 6.2.3 Monitoring & Analytics
+
 ```javascript
 // Performance Monitoring
 class BlockchainMetrics {
@@ -567,11 +656,13 @@ class BlockchainMetrics {
 ### 6.3 Langfristige Verbesserungen (6-12 Monate)
 
 #### 6.3.1 Interoperabilität
+
 - W3C Verifiable Credentials Standard
 - EU Digital Identity Wallet Integration
 - Cross-Chain-Bridge für andere Blockchain-Netzwerke
 
 #### 6.3.2 Advanced Features
+
 ```typescript
 // Smart Contract Integration
 interface CertificateSmartContract {
@@ -582,6 +673,7 @@ interface CertificateSmartContract {
 ```
 
 #### 6.3.3 Mobile-First Approach
+
 - React Native Mobile App
 - Offline-Verifikation mit QR-Codes
 - Biometrische Authentifizierung
@@ -591,15 +683,19 @@ interface CertificateSmartContract {
 ### 7.1 Technologie-Alternativen
 
 #### 7.1.1 Blockchain-Plattformen
+
 **Aktuelle Lösung:** Custom Blockchain mit PoA
 **Alternativen:**
+
 1. **Hyperledger Fabric**: Enterprise-fokussiert, bessere DSGVO-Compliance
 2. **Ethereum Private Network**: Smart Contract-Unterstützung
 3. **Polygon**: Lower costs, Ethereum-kompatibel
 
 #### 7.1.2 Konsensus-Mechanismen
+
 **Aktuelle Lösung:** Proof of Authority
 **Alternativen:**
+
 1. **Practical Byzantine Fault Tolerance (PBFT)**: Bessere Fehlertoleranz
 2. **Delegated Proof of Stake (DPoS)**: Energieeffizient mit Governance
 3. **Proof of Authority + BFT**: Hybrid-Ansatz
@@ -607,6 +703,7 @@ interface CertificateSmartContract {
 ### 7.2 Architektur-Alternativen
 
 #### 7.2.1 Mikroservice-Architektur
+
 ```yaml
 # Alternative Systemarchitektur
 services:
@@ -614,12 +711,12 @@ services:
     - certificate-issuance
     - certificate-verification
     - certificate-search
-  
+
   blockchain-service:
     - block-validation
     - consensus-management
     - network-communication
-  
+
   identity-service:
     - institution-management
     - authentication
@@ -627,6 +724,7 @@ services:
 ```
 
 #### 7.2.2 Event-Driven Architecture
+
 ```typescript
 // Event-basierte Kommunikation
 interface CertificateEvents {
@@ -639,9 +737,11 @@ interface CertificateEvents {
 ## 8. Fazit und Empfehlungen
 
 ### 8.1 Gesamtbewertung
-**Bewertung: 8.0/10** *(Verbessert von 7.5/10)*
+
+**Bewertung: 8.0/10** _(Verbessert von 7.5/10)_
 
 **Stärken:**
+
 - ✅ Solide technische Grundlage
 - ✅ Korrekte Kryptographie-Implementierung
 - ✅ Spezialisierung auf Bildungszertifikate
@@ -651,6 +751,7 @@ interface CertificateEvents {
 - ✅ Benutzerfreundliche UI/UX
 
 **Schwächen:**
+
 - ❌ Fehlende Produktions-Bereitschaft
 - ❌ In-Memory Storage (keine Persistenz)
 - ⚠️ Unvollständige Test-Abdeckung (Frontend)
@@ -660,18 +761,21 @@ interface CertificateEvents {
 ### 8.2 Prioritisierte Handlungsempfehlungen
 
 #### 8.2.1 Kritische Priorität (Sofort)
+
 1. **Persistente Datenbank-Integration** - PostgreSQL/MongoDB
 2. **Vollständige Test-Suite** - Unit, Integration, E2E Tests
 3. **API-Dokumentation** - OpenAPI/Swagger Spezifikation
 4. **DSGVO-Compliance-Features** - Data Protection Officer
 
 #### 8.2.2 Hohe Priorität (1-3 Monate)
+
 1. **Docker-basierte Deployment-Strategie**
 2. **Monitoring und Logging-Infrastruktur** - ELK Stack
 3. **Load-Testing und Performance-Optimierung**
 4. **Mobile App (PWA) Development**
 
 #### 8.2.3 Mittlere Priorität (3-6 Monate)
+
 1. **Internationale Standards-Compliance** - W3C VC
 2. **Advanced Security Features** - HSM, Multi-Sig
 3. **AI-gestützte Fraud Detection**
@@ -694,6 +798,7 @@ Security Tests:    75% Coverage ✅
 Das Projekt demonstriert erfolgreich eine funktionale Blockchain-Lösung für Bildungszertifikate mit soliden technischen Grundlagen. Die spezialisierte Herangehensweise und die bewusste Abkehr von Kryptowährungs-Features sind strengths für den Anwendungsfall.
 
 **Positive Entwicklungen seit der letzten Bewertung:**
+
 - Verbesserte Frontend-Backend-Integration
 - Stabile API-Endpunkte
 - Bessere Performance-Metriken
@@ -705,5 +810,5 @@ Das Projekt demonstriert erfolgreich eine funktionale Blockchain-Lösung für Bi
 
 ---
 
-*Test-Dokumentation erstellt und aktualisiert: 27. Juni 2025*
-*Nächste Review: 27. September 2025*
+_Test-Dokumentation erstellt und aktualisiert: 27. Juni 2025_
+_Nächste Review: 27. September 2025_

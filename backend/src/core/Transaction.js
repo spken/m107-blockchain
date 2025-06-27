@@ -1,12 +1,12 @@
 /**
  * DEPRECATED: Generic Transaction Implementation
- * 
+ *
  * This file is kept for reference but should not be used in production.
  * The project uses CertificateTransaction.js for the educational certificate system.
- * 
+ *
  * This generic transaction implementation includes currency-like features
  * (amounts, fees, balances) which are not relevant for certificate management.
- * 
+ *
  * Use CertificateTransaction.js instead for all certificate-related operations.
  */
 
@@ -24,7 +24,9 @@ class Transaction {
     payload = null,
     id = null,
   ) {
-    console.warn("DEPRECATED: Use CertificateTransaction instead for certificate management");
+    console.warn(
+      "DEPRECATED: Use CertificateTransaction instead for certificate management",
+    );
     this.id = id || uuidv4(); // << NEU
     this.fromAddress = fromAddress;
     this.toAddress = toAddress;

@@ -15,7 +15,7 @@ class CertificateTransaction {
     toAddress = null,
     payload = null,
     fee = 0,
-    timestamp = null
+    timestamp = null,
   }) {
     this.id = id || uuidv4();
     this.type = type; // CERTIFICATE_ISSUANCE, CERTIFICATE_VERIFICATION, CERTIFICATE_REVOCATION
@@ -39,7 +39,7 @@ class CertificateTransaction {
       toAddress: this.toAddress,
       payload: this.payload,
       fee: this.fee,
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
 
     return crypto
@@ -94,11 +94,22 @@ class CertificateTransaction {
     const errors = [];
 
     // Basic validation
-    if (!this.type || !["CERTIFICATE_ISSUANCE", "CERTIFICATE_VERIFICATION", "CERTIFICATE_REVOCATION", "MINING_REWARD"].includes(this.type)) {
+    if (
+      !this.type ||
+      ![
+        "CERTIFICATE_ISSUANCE",
+        "CERTIFICATE_VERIFICATION",
+        "CERTIFICATE_REVOCATION",
+        "MINING_REWARD",
+      ].includes(this.type)
+    ) {
       errors.push("Invalid transaction type");
     }
 
-    if (this.type !== "MINING_REWARD" && (!this.fromAddress || this.fromAddress.length !== 130)) {
+    if (
+      this.type !== "MINING_REWARD" &&
+      (!this.fromAddress || this.fromAddress.length !== 130)
+    ) {
       errors.push("Invalid fromAddress format");
     }
 
@@ -106,19 +117,29 @@ class CertificateTransaction {
     switch (this.type) {
       case "CERTIFICATE_ISSUANCE":
         if (!this.payload || !this.payload.certificate) {
-          errors.push("Certificate issuance requires certificate data in payload");
+          errors.push(
+            "Certificate issuance requires certificate data in payload",
+          );
         }
         break;
 
       case "CERTIFICATE_VERIFICATION":
         if (!this.payload || !this.payload.certificateId) {
-          errors.push("Certificate verification requires certificateId in payload");
+          errors.push(
+            "Certificate verification requires certificateId in payload",
+          );
         }
         break;
 
       case "CERTIFICATE_REVOCATION":
-        if (!this.payload || !this.payload.certificateId || !this.payload.reason) {
-          errors.push("Certificate revocation requires certificateId and reason in payload");
+        if (
+          !this.payload ||
+          !this.payload.certificateId ||
+          !this.payload.reason
+        ) {
+          errors.push(
+            "Certificate revocation requires certificateId and reason in payload",
+          );
         }
         break;
     }
@@ -135,39 +156,47 @@ class CertificateTransaction {
       fromAddress: institutionPublicKey,
       toAddress: certificate.recipientId,
       payload: certificate.toTransactionPayload(),
-      fee: 0 // No fee for certificate issuance
+      fee: 0, // No fee for certificate issuance
     });
   }
 
   /**
    * Create certificate verification transaction
    */
-  static createCertificateVerification(verifierPublicKey, certificateId, verificationResult) {
+  static createCertificateVerification(
+    verifierPublicKey,
+    certificateId,
+    verificationResult,
+  ) {
     return new CertificateTransaction({
       type: "CERTIFICATE_VERIFICATION",
       fromAddress: verifierPublicKey,
       payload: {
         certificateId,
         verificationResult,
-        verifiedAt: new Date().toISOString()
+        verifiedAt: new Date().toISOString(),
       },
-      fee: 0
+      fee: 0,
     });
   }
 
   /**
    * Create certificate revocation transaction
    */
-  static createCertificateRevocation(institutionPublicKey, certificateId, reason) {
+  static createCertificateRevocation(
+    institutionPublicKey,
+    certificateId,
+    reason,
+  ) {
     return new CertificateTransaction({
       type: "CERTIFICATE_REVOCATION",
       fromAddress: institutionPublicKey,
       payload: {
         certificateId,
         reason,
-        revokedAt: new Date().toISOString()
+        revokedAt: new Date().toISOString(),
       },
-      fee: 0
+      fee: 0,
     });
   }
 
@@ -183,7 +212,7 @@ class CertificateTransaction {
       fromAddress: this.fromAddress,
       toAddress: this.toAddress,
       fee: this.fee,
-      isValid: false
+      isValid: false,
     };
 
     try {
@@ -201,7 +230,7 @@ class CertificateTransaction {
             recipientName: this.payload.certificate.recipientName,
             institutionName: this.payload.certificate.institutionName,
             certificateType: this.payload.certificate.certificateType,
-            courseName: this.payload.certificate.courseName
+            courseName: this.payload.certificate.courseName,
           };
         }
         break;
@@ -210,7 +239,7 @@ class CertificateTransaction {
         if (this.payload) {
           summary.verification = {
             certificateId: this.payload.certificateId,
-            result: this.payload.verificationResult
+            result: this.payload.verificationResult,
           };
         }
         break;
@@ -219,7 +248,7 @@ class CertificateTransaction {
         if (this.payload) {
           summary.revocation = {
             certificateId: this.payload.certificateId,
-            reason: this.payload.reason
+            reason: this.payload.reason,
           };
         }
         break;
@@ -240,7 +269,7 @@ class CertificateTransaction {
       fee: this.fee,
       timestamp: this.timestamp,
       payload: this.payload,
-      signature: this.signature
+      signature: this.signature,
     };
   }
 
@@ -249,7 +278,7 @@ class CertificateTransaction {
    */
   static fromLegacyTransaction(legacyTx) {
     const type = legacyTx.payload?.type || "UNKNOWN";
-    
+
     return new CertificateTransaction({
       id: legacyTx.id,
       type: type,
@@ -257,7 +286,7 @@ class CertificateTransaction {
       toAddress: legacyTx.toAddress,
       payload: legacyTx.payload,
       fee: legacyTx.fee,
-      timestamp: legacyTx.timestamp
+      timestamp: legacyTx.timestamp,
     });
   }
 }

@@ -22,7 +22,7 @@ function NetworkManager() {
     initializeNetwork,
     runConsensus,
   } = useNetwork();
-  
+
   const [isInitializing, setIsInitializing] = useState(false);
   const [isRunningConsensus, setIsRunningConsensus] = useState(false);
 
@@ -32,7 +32,7 @@ function NetworkManager() {
       await initializeNetwork();
       await refresh();
     } catch (error) {
-      console.error('Failed to initialize network:', error);
+      console.error("Failed to initialize network:", error);
     } finally {
       setIsInitializing(false);
     }
@@ -44,7 +44,7 @@ function NetworkManager() {
       await runConsensus();
       await refresh();
     } catch (error) {
-      console.error('Failed to run consensus:', error);
+      console.error("Failed to run consensus:", error);
     } finally {
       setIsRunningConsensus(false);
     }
@@ -55,12 +55,7 @@ function NetworkManager() {
   }
 
   if (error) {
-    return (
-      <ErrorFallback
-        error={error}
-        onRetry={refresh}
-      />
-    );
+    return <ErrorFallback error={error} onRetry={refresh} />;
   }
 
   return (
@@ -84,7 +79,7 @@ function NetworkManager() {
             disabled={isInitializing}
           >
             <Network className="w-4 h-4 mr-1" />
-            {isInitializing ? 'Initializing...' : 'Initialize Network'}
+            {isInitializing ? "Initializing..." : "Initialize Network"}
           </Button>
           <Button
             onClick={handleRunConsensus}
@@ -93,7 +88,7 @@ function NetworkManager() {
             disabled={isRunningConsensus}
           >
             <Shield className="w-4 h-4 mr-1" />
-            {isRunningConsensus ? 'Running...' : 'Run Consensus'}
+            {isRunningConsensus ? "Running..." : "Run Consensus"}
           </Button>
         </div>
       </div>
@@ -105,7 +100,7 @@ function NetworkManager() {
           </CardHeader>
           <CardContent>
             <div className="text-sm font-mono">
-              {networkStatus?.currentNodeUrl || 'Unknown'}
+              {networkStatus?.currentNodeUrl || "Unknown"}
             </div>
           </CardContent>
         </Card>
@@ -143,13 +138,15 @@ function NetworkManager() {
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Node ID:</span>
               <span className="font-mono text-xs">
-                {networkStatus?.nodeId || 'Unknown'}
+                {networkStatus?.nodeId || "Unknown"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Current Institution:</span>
+              <span className="text-sm text-gray-600">
+                Current Institution:
+              </span>
               <span className="text-sm">
-                {networkStatus?.institution?.name || 'None'}
+                {networkStatus?.institution?.name || "None"}
               </span>
             </div>
             {networkStatus?.institution && (
@@ -184,7 +181,7 @@ function NetworkManager() {
                         {institution.type}
                       </div>
                     </div>
-                    <Badge 
+                    <Badge
                       variant={institution.authorized ? "default" : "secondary"}
                     >
                       {institution.authorized ? "Authorized" : "Pending"}
@@ -219,14 +216,12 @@ function NetworkManager() {
                     <div className="font-mono text-sm">
                       {networkStatus.currentNodeUrl}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      This node
-                    </div>
+                    <div className="text-xs text-gray-500">This node</div>
                   </div>
                 </div>
                 <Badge variant="default">Online</Badge>
               </div>
-              
+
               {/* Other nodes */}
               {networkStatus.networkNodes.map((nodeUrl, index) => (
                 <div
@@ -237,9 +232,7 @@ function NetworkManager() {
                     <Badge variant="outline">Node {index + 1}</Badge>
                     <div>
                       <div className="font-mono text-sm">{nodeUrl}</div>
-                      <div className="text-xs text-gray-500">
-                        Network peer
-                      </div>
+                      <div className="text-xs text-gray-500">Network peer</div>
                     </div>
                   </div>
                   <Badge variant="secondary">Unknown</Badge>

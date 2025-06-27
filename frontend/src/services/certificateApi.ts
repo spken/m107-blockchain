@@ -1,10 +1,10 @@
-import type { 
-  Certificate, 
-  CertificateFormData, 
-  CertificateVerification, 
-  Block, 
-  BlockchainStats, 
-  NetworkStatus, 
+import type {
+  Certificate,
+  CertificateFormData,
+  CertificateVerification,
+  Block,
+  BlockchainStats,
+  NetworkStatus,
   Institution,
   CertificateApiResponse,
   BlockApiResponse,
@@ -15,10 +15,10 @@ import type {
   WalletsApiResponse,
   WalletDetailsApiResponse,
   WalletCertificatesApiResponse,
-  WalletTransactionsApiResponse
-} from '@/types/certificates';
+  WalletTransactionsApiResponse,
+} from "@/types/certificates";
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = "http://localhost:3001";
 
 class CertificateAPI {
   private baseUrl: string;
@@ -27,16 +27,19 @@ class CertificateAPI {
     this.baseUrl = baseUrl;
   }
 
-  private async fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async fetchAPI<T>(
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     // Create timeout controller
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
+
     const config: RequestInit = {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
       signal: controller.signal,
@@ -45,27 +48,34 @@ class CertificateAPI {
 
     try {
       const response = await fetch(url, config);
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        );
       }
 
       return await response.json();
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       // Enhanced error handling for network issues
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        throw new Error('ERR_CONNECTION_REFUSED: Cannot connect to backend server');
-      } else if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout: Backend server is not responding');
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "ERR_CONNECTION_REFUSED: Cannot connect to backend server",
+        );
+      } else if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("Request timeout: Backend server is not responding");
       } else if (error instanceof Error) {
         throw error;
       }
-      throw new Error('Network request failed');
+      throw new Error("Network request failed");
     }
   }
 
@@ -74,9 +84,11 @@ class CertificateAPI {
   /**
    * Issue a new certificate
    */
-  async issueCertificate(certificateData: CertificateFormData): Promise<CertificateApiResponse> {
-    return this.fetchAPI<CertificateApiResponse>('/certificates', {
-      method: 'POST',
+  async issueCertificate(
+    certificateData: CertificateFormData,
+  ): Promise<CertificateApiResponse> {
+    return this.fetchAPI<CertificateApiResponse>("/certificates", {
+      method: "POST",
       body: JSON.stringify(certificateData),
     });
   }
@@ -91,14 +103,19 @@ class CertificateAPI {
   /**
    * Search and filter certificates
    */
-  async searchCertificates(params: CertificateSearchParams = {}): Promise<Certificate[]> {
+  async searchCertificates(
+    params: CertificateSearchParams = {},
+  ): Promise<Certificate[]> {
     const searchParams = new URLSearchParams();
-    
-    if (params.q) searchParams.append('q', params.q);
-    if (params.institution) searchParams.append('institution', params.institution);
-    if (params.recipient) searchParams.append('recipient', params.recipient);
 
-    const endpoint = '/certificates' + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+    if (params.q) searchParams.append("q", params.q);
+    if (params.institution)
+      searchParams.append("institution", params.institution);
+    if (params.recipient) searchParams.append("recipient", params.recipient);
+
+    const endpoint =
+      "/certificates" +
+      (searchParams.toString() ? `?${searchParams.toString()}` : "");
     return this.fetchAPI<Certificate[]>(endpoint);
   }
 
@@ -106,17 +123,23 @@ class CertificateAPI {
    * Verify a certificate
    */
   async verifyCertificate(id: string): Promise<CertificateVerification> {
-    return this.fetchAPI<CertificateVerification>(`/certificates/${id}/verify`, {
-      method: 'POST',
-    });
+    return this.fetchAPI<CertificateVerification>(
+      `/certificates/${id}/verify`,
+      {
+        method: "POST",
+      },
+    );
   }
 
   /**
    * Revoke a certificate
    */
-  async revokeCertificate(id: string, reason: string): Promise<CertificateApiResponse> {
+  async revokeCertificate(
+    id: string,
+    reason: string,
+  ): Promise<CertificateApiResponse> {
     return this.fetchAPI<CertificateApiResponse>(`/certificates/${id}/revoke`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ reason }),
     });
   }
@@ -127,7 +150,7 @@ class CertificateAPI {
    * Get all blocks
    */
   async getBlocks(): Promise<Block[]> {
-    return this.fetchAPI<Block[]>('/blocks');
+    return this.fetchAPI<Block[]>("/blocks");
   }
 
   /**
@@ -141,22 +164,22 @@ class CertificateAPI {
    * Get blockchain statistics
    */
   async getStatistics(): Promise<BlockchainStats> {
-    return this.fetchAPI<BlockchainStats>('/statistics');
+    return this.fetchAPI<BlockchainStats>("/statistics");
   }
 
   /**
    * Validate blockchain
    */
   async validateBlockchain(): Promise<{ valid: boolean }> {
-    return this.fetchAPI<{ valid: boolean }>('/validate');
+    return this.fetchAPI<{ valid: boolean }>("/validate");
   }
 
   /**
    * Mine pending transactions
    */
   async mineBlock(): Promise<BlockApiResponse> {
-    return this.fetchAPI<BlockApiResponse>('/mine', {
-      method: 'POST',
+    return this.fetchAPI<BlockApiResponse>("/mine", {
+      method: "POST",
     });
   }
 
@@ -166,7 +189,7 @@ class CertificateAPI {
    * Get pending transactions
    */
   async getPendingTransactions(): Promise<CertificateTransaction[]> {
-    return this.fetchAPI<CertificateTransaction[]>('/transactions/pending');
+    return this.fetchAPI<CertificateTransaction[]>("/transactions/pending");
   }
 
   // ==================== AUTO-MINING ENDPOINTS ====================
@@ -180,21 +203,21 @@ class CertificateAPI {
     active: boolean;
     pendingTransactions: number;
   }> {
-    return this.fetchAPI('/auto-mining/status');
+    return this.fetchAPI("/auto-mining/status");
   }
 
   /**
    * Enable auto-mining
    */
   async enableAutoMining(): Promise<{ message: string; interval: number }> {
-    return this.fetchAPI('/auto-mining/enable', { method: 'POST' });
+    return this.fetchAPI("/auto-mining/enable", { method: "POST" });
   }
 
   /**
    * Disable auto-mining
    */
   async disableAutoMining(): Promise<{ message: string }> {
-    return this.fetchAPI('/auto-mining/disable', { method: 'POST' });
+    return this.fetchAPI("/auto-mining/disable", { method: "POST" });
   }
 
   // ==================== INSTITUTION ENDPOINTS ====================
@@ -203,14 +226,14 @@ class CertificateAPI {
    * Get all institutions
    */
   async getInstitutions(): Promise<Institution[]> {
-    return this.fetchAPI<Institution[]>('/institutions');
+    return this.fetchAPI<Institution[]>("/institutions");
   }
 
   /**
    * Get current node's institution info
    */
   async getCurrentInstitution(): Promise<Institution> {
-    return this.fetchAPI<Institution>('/institution');
+    return this.fetchAPI<Institution>("/institution");
   }
 
   // ==================== NETWORK ENDPOINTS ====================
@@ -219,15 +242,19 @@ class CertificateAPI {
    * Get network status
    */
   async getNetworkStatus(): Promise<NetworkStatus> {
-    return this.fetchAPI<NetworkStatus>('/network');
+    return this.fetchAPI<NetworkStatus>("/network");
   }
 
   /**
    * Initialize network
    */
-  async initializeNetwork(): Promise<{ note: string; nodeUrls: string[]; institution?: Institution }> {
-    return this.fetchAPI('/initialize-network', {
-      method: 'POST',
+  async initializeNetwork(): Promise<{
+    note: string;
+    nodeUrls: string[];
+    institution?: Institution;
+  }> {
+    return this.fetchAPI("/initialize-network", {
+      method: "POST",
     });
   }
 
@@ -235,8 +262,8 @@ class CertificateAPI {
    * Register node with network
    */
   async registerNode(nodeUrl: string): Promise<{ note: string }> {
-    return this.fetchAPI('/register-and-broadcast-node', {
-      method: 'POST',
+    return this.fetchAPI("/register-and-broadcast-node", {
+      method: "POST",
       body: JSON.stringify({ newNodeUrl: nodeUrl }),
     });
   }
@@ -247,7 +274,7 @@ class CertificateAPI {
    * Run consensus algorithm
    */
   async runConsensus(): Promise<ConsensusResponse> {
-    return this.fetchAPI<ConsensusResponse>('/consensus');
+    return this.fetchAPI<ConsensusResponse>("/consensus");
   }
 
   // ==================== WALLET ENDPOINTS ====================
@@ -256,8 +283,8 @@ class CertificateAPI {
    * Create a new wallet
    */
   async createWallet(label?: string): Promise<WalletApiResponse> {
-    return this.fetchAPI<WalletApiResponse>('/wallets', {
-      method: 'POST',
+    return this.fetchAPI<WalletApiResponse>("/wallets", {
+      method: "POST",
       body: JSON.stringify({ label }),
     });
   }
@@ -266,7 +293,7 @@ class CertificateAPI {
    * Get all wallets
    */
   async getWallets(): Promise<WalletsApiResponse> {
-    return this.fetchAPI<WalletsApiResponse>('/wallets');
+    return this.fetchAPI<WalletsApiResponse>("/wallets");
   }
 
   /**
@@ -279,15 +306,23 @@ class CertificateAPI {
   /**
    * Get certificates owned by a wallet
    */
-  async getWalletCertificates(publicKey: string): Promise<WalletCertificatesApiResponse> {
-    return this.fetchAPI<WalletCertificatesApiResponse>(`/wallets/${publicKey}/certificates`);
+  async getWalletCertificates(
+    publicKey: string,
+  ): Promise<WalletCertificatesApiResponse> {
+    return this.fetchAPI<WalletCertificatesApiResponse>(
+      `/wallets/${publicKey}/certificates`,
+    );
   }
 
   /**
    * Get transaction history for a wallet
    */
-  async getWalletTransactions(publicKey: string): Promise<WalletTransactionsApiResponse> {
-    return this.fetchAPI<WalletTransactionsApiResponse>(`/wallets/${publicKey}/transactions`);
+  async getWalletTransactions(
+    publicKey: string,
+  ): Promise<WalletTransactionsApiResponse> {
+    return this.fetchAPI<WalletTransactionsApiResponse>(
+      `/wallets/${publicKey}/transactions`,
+    );
   }
 
   // ==================== UTILITY METHODS ====================
@@ -297,7 +332,7 @@ class CertificateAPI {
    */
   async ping(): Promise<boolean> {
     try {
-      await this.fetchAPI('/network');
+      await this.fetchAPI("/network");
       return true;
     } catch {
       return false;
@@ -308,7 +343,7 @@ class CertificateAPI {
    * Get API health status
    */
   async getHealth(): Promise<{
-    status: 'healthy' | 'unhealthy';
+    status: "healthy" | "unhealthy";
     timestamp: string;
     network: boolean;
     blockchain: boolean;
@@ -320,14 +355,14 @@ class CertificateAPI {
       ]);
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date().toISOString(),
         network: networkStatus.networkNodes.length > 0,
         blockchain: stats.totalBlocks > 0,
       };
     } catch (error) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date().toISOString(),
         network: false,
         blockchain: false,
@@ -359,11 +394,14 @@ export { CertificateAPI };
 // Export convenience functions for common operations
 export const api = {
   // Certificates
-  issueCertificate: (data: CertificateFormData) => certificateAPI.issueCertificate(data),
+  issueCertificate: (data: CertificateFormData) =>
+    certificateAPI.issueCertificate(data),
   getCertificate: (id: string) => certificateAPI.getCertificate(id),
-  searchCertificates: (params?: CertificateSearchParams) => certificateAPI.searchCertificates(params),
+  searchCertificates: (params?: CertificateSearchParams) =>
+    certificateAPI.searchCertificates(params),
   verifyCertificate: (id: string) => certificateAPI.verifyCertificate(id),
-  revokeCertificate: (id: string, reason: string) => certificateAPI.revokeCertificate(id, reason),
+  revokeCertificate: (id: string, reason: string) =>
+    certificateAPI.revokeCertificate(id, reason),
 
   // Blockchain
   getBlocks: () => certificateAPI.getBlocks(),
@@ -396,6 +434,8 @@ export const api = {
   createWallet: (label?: string) => certificateAPI.createWallet(label),
   getWallets: () => certificateAPI.getWallets(),
   getWallet: (publicKey: string) => certificateAPI.getWallet(publicKey),
-  getWalletCertificates: (publicKey: string) => certificateAPI.getWalletCertificates(publicKey),
-  getWalletTransactions: (publicKey: string) => certificateAPI.getWalletTransactions(publicKey),
+  getWalletCertificates: (publicKey: string) =>
+    certificateAPI.getWalletCertificates(publicKey),
+  getWalletTransactions: (publicKey: string) =>
+    certificateAPI.getWalletTransactions(publicKey),
 };

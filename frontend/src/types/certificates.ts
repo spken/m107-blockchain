@@ -19,15 +19,15 @@ export interface Certificate {
   hash: string;
 }
 
-export type CertificateType = 
+export type CertificateType =
   | "BACHELOR"
-  | "MASTER" 
+  | "MASTER"
   | "PHD"
   | "DIPLOMA"
   | "CERTIFICATION"
   | "PROFESSIONAL";
 
-export type CertificateStatus = 
+export type CertificateStatus =
   | "VALID"
   | "INVALID"
   | "EXPIRED"
@@ -52,7 +52,7 @@ export interface Institution {
   lastActivity: string;
 }
 
-export type InstitutionType = 
+export type InstitutionType =
   | "UNIVERSITY"
   | "VOCATIONAL_SCHOOL"
   | "CERTIFICATION_PROVIDER";
@@ -86,7 +86,7 @@ export interface CertificateTransaction {
   };
 }
 
-export type TransactionType = 
+export type TransactionType =
   | "CERTIFICATE_ISSUANCE"
   | "CERTIFICATE_VERIFICATION"
   | "CERTIFICATE_REVOCATION"
@@ -187,14 +187,18 @@ export interface DashboardData {
 
 export interface ActivityItem {
   id: string;
-  type: 'certificate_issued' | 'certificate_verified' | 'certificate_revoked' | 'block_mined';
+  type:
+    | "certificate_issued"
+    | "certificate_verified"
+    | "certificate_revoked"
+    | "block_mined";
   timestamp: string;
   description: string;
   data?: any;
 }
 
 // Certificate display modes
-export type CertificateViewMode = 'card' | 'list' | 'detailed';
+export type CertificateViewMode = "card" | "list" | "detailed";
 
 // Filter and sort options
 export interface FilterOptions {
@@ -208,8 +212,8 @@ export interface FilterOptions {
 }
 
 export interface SortOptions {
-  field: 'issueDate' | 'recipientName' | 'institutionName' | 'certificateType';
-  direction: 'asc' | 'desc';
+  field: "issueDate" | "recipientName" | "institutionName" | "certificateType";
+  direction: "asc" | "desc";
 }
 
 // Error types
@@ -272,7 +276,7 @@ export interface VerificationResultProps {
 // Modal and dialog types
 export interface CertificateModalState {
   isOpen: boolean;
-  mode: 'view' | 'create' | 'verify' | 'revoke';
+  mode: "view" | "create" | "verify" | "revoke";
   certificate?: Certificate;
   data?: any;
 }
@@ -310,10 +314,7 @@ export interface Wallet {
   created: string;
 }
 
-export type WalletType = 
-  | "INSTITUTION"
-  | "INDIVIDUAL"
-  | "AUTHORITY";
+export type WalletType = "INSTITUTION" | "INDIVIDUAL" | "AUTHORITY";
 
 export interface WalletDetails extends Wallet {
   certificates: Certificate[];
@@ -328,8 +329,8 @@ export interface WalletTransaction {
   amount: number;
   fee: number;
   timestamp: string;
-  type: 'SENT' | 'RECEIVED';
-  status?: 'PENDING' | 'CONFIRMED';
+  type: "SENT" | "RECEIVED";
+  status?: "PENDING" | "CONFIRMED";
   blockHash?: string;
   blockIndex?: number;
   blockTimestamp?: string;

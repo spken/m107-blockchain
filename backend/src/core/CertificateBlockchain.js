@@ -6,7 +6,7 @@ const { InstitutionRegistry } = require("./Institution");
 /**
  * Educational Certificate Blockchain
  * Specialized blockchain for managing educational certificates with Proof of Authority consensus
- * 
+ *
  * This blockchain is designed specifically for certificate management and does not include
  * currency-like features such as balances, amounts, or transaction fees.
  */
@@ -18,17 +18,17 @@ class CertificateBlockchain {
     this.currentNodeUrl = "";
     this.networkNodes = [];
     this.institutionRegistry = new InstitutionRegistry();
-    
+
     // Certificate-specific data structures
     this.certificates = new Map(); // certificateId -> certificate
     this.revokedCertificates = new Set(); // Set of revoked certificate IDs
     this.verificationHistory = new Map(); // certificateId -> verification records
-    
+
     // Wallet-specific data structures for certificate ownership tracking
     this.walletCertificates = new Map(); // walletAddress -> Set of certificate IDs
     this.walletIssuedCertificates = new Map(); // walletAddress -> Set of certificate IDs (as issuer)
     this.walletReceivedCertificates = new Map(); // walletAddress -> Set of certificate IDs (as recipient)
-    
+
     // Proof of Authority settings
     this.authorizedValidators = new Set(); // Authorized institution addresses
     this.consensusThreshold = 2; // 2 out of 3 validators required
@@ -72,17 +72,19 @@ class CertificateBlockchain {
   minePendingTransactions(validatorAddress) {
     // Only authorized validators can process blocks
     if (!this.isAuthorizedValidator(validatorAddress)) {
-      throw new Error("Only authorized institutions can process certificate blocks");
+      throw new Error(
+        "Only authorized institutions can process certificate blocks",
+      );
     }
 
     // Create new block without mining rewards (not applicable for certificates)
     const block = new Block(
       this.chain.length, // Index is the current chain length
       Date.now(),
-      this.pendingTransactions.map(tx => tx.toLegacyTransaction()),
-      this.getLatestBlock().hash
+      this.pendingTransactions.map((tx) => tx.toLegacyTransaction()),
+      this.getLatestBlock().hash,
     );
-    
+
     // Light processing for PoA (no energy-intensive mining)
     block.mineBlock(this.difficulty);
 
@@ -104,7 +106,10 @@ class CertificateBlockchain {
       try {
         this.processTransaction(transaction);
       } catch (error) {
-        console.error(`Error processing transaction ${transaction.id}:`, error.message);
+        console.error(
+          `Error processing transaction ${transaction.id}:`,
+          error.message,
+        );
       }
     }
   }
@@ -138,7 +143,7 @@ class CertificateBlockchain {
 
     const certificateData = transaction.payload.certificate;
     const certificate = Certificate.fromTransactionPayload(transaction.payload);
-    
+
     // Validate certificate
     if (!certificate.isValid()) {
       throw new Error("Invalid certificate signature");
@@ -146,58 +151,62 @@ class CertificateBlockchain {
 
     // Store certificate
     this.certificates.set(certificate.id, certificate);
-    
+
     // Track wallet ownership of certificates
     const issuerWallet = certificate.institutionPublicKey;
-    const recipientWallet = transaction.payload.recipientWalletAddress || 
-                           (certificate.metadata && certificate.metadata.recipientWalletAddress);
-    
+    const recipientWallet =
+      transaction.payload.recipientWalletAddress ||
+      (certificate.metadata && certificate.metadata.recipientWalletAddress);
+
     // Track issued certificates for the issuer wallet (institution)
     if (issuerWallet) {
       if (!this.walletIssuedCertificates.has(issuerWallet)) {
         this.walletIssuedCertificates.set(issuerWallet, new Set());
       }
       this.walletIssuedCertificates.get(issuerWallet).add(certificate.id);
-      
+
       // Also add to general wallet certificates map
       if (!this.walletCertificates.has(issuerWallet)) {
         this.walletCertificates.set(issuerWallet, new Set());
       }
       this.walletCertificates.get(issuerWallet).add(certificate.id);
     }
-    
+
     // Track received certificates for the recipient wallet
     if (recipientWallet && recipientWallet !== issuerWallet) {
       if (!this.walletReceivedCertificates.has(recipientWallet)) {
         this.walletReceivedCertificates.set(recipientWallet, new Set());
       }
       this.walletReceivedCertificates.get(recipientWallet).add(certificate.id);
-      
+
       // Also add to general wallet certificates map
       if (!this.walletCertificates.has(recipientWallet)) {
         this.walletCertificates.set(recipientWallet, new Set());
       }
       this.walletCertificates.get(recipientWallet).add(certificate.id);
     }
-    
+
     // Update institution statistics
-    this.institutionRegistry.incrementCertificatesIssued(transaction.fromAddress);
+    this.institutionRegistry.incrementCertificatesIssued(
+      transaction.fromAddress,
+    );
   }
 
   /**
    * Process certificate verification transaction
    */
   processCertificateVerification(transaction) {
-    const { certificateId, verificationResult, verifiedAt } = transaction.payload;
-    
+    const { certificateId, verificationResult, verifiedAt } =
+      transaction.payload;
+
     if (!this.verificationHistory.has(certificateId)) {
       this.verificationHistory.set(certificateId, []);
     }
-    
+
     this.verificationHistory.get(certificateId).push({
       verifier: transaction.fromAddress,
       result: verificationResult,
-      timestamp: verifiedAt
+      timestamp: verifiedAt,
     });
   }
 
@@ -210,7 +219,7 @@ class CertificateBlockchain {
     }
 
     const { certificateId, reason, revokedAt } = transaction.payload;
-    
+
     // Check if the institution has authority to revoke this certificate
     const certificate = this.certificates.get(certificateId);
     if (!certificate) {
@@ -227,7 +236,11 @@ class CertificateBlockchain {
   /**
    * Create and add a certificate transaction
    */
-  issueCertificate(certificate, institutionPrivateKey, recipientWalletAddress = null) {
+  issueCertificate(
+    certificate,
+    institutionPrivateKey,
+    recipientWalletAddress = null,
+  ) {
     // Validate institution authorization
     if (!this.isAuthorizedValidator(certificate.institutionPublicKey)) {
       throw new Error("Institution is not authorized to issue certificates");
@@ -239,7 +252,7 @@ class CertificateBlockchain {
     // Create transaction
     const transaction = CertificateTransaction.createCertificateIssuance(
       certificate.institutionPublicKey,
-      certificate
+      certificate,
     );
 
     // Add recipient wallet address to transaction payload if provided
@@ -271,7 +284,9 @@ class CertificateBlockchain {
     // Validate transaction data
     const validationErrors = transaction.validateTransactionData();
     if (validationErrors.length > 0) {
-      throw new Error("Transaction validation failed: " + validationErrors.join(", "));
+      throw new Error(
+        "Transaction validation failed: " + validationErrors.join(", "),
+      );
     }
 
     this.pendingTransactions.push(transaction);
@@ -296,38 +311,59 @@ class CertificateBlockchain {
    */
   searchCertificates(criteria = {}) {
     const allCertificates = this.getAllCertificates();
-    
-    return allCertificates.filter(cert => {
+
+    return allCertificates.filter((cert) => {
       // Filter by recipient name
-      if (criteria.recipientName && !cert.recipientName.toLowerCase().includes(criteria.recipientName.toLowerCase())) {
+      if (
+        criteria.recipientName &&
+        !cert.recipientName
+          .toLowerCase()
+          .includes(criteria.recipientName.toLowerCase())
+      ) {
         return false;
       }
-      
+
       // Filter by institution
-      if (criteria.institutionName && !cert.institutionName.toLowerCase().includes(criteria.institutionName.toLowerCase())) {
+      if (
+        criteria.institutionName &&
+        !cert.institutionName
+          .toLowerCase()
+          .includes(criteria.institutionName.toLowerCase())
+      ) {
         return false;
       }
-      
+
       // Filter by institution public key
-      if (criteria.institutionPublicKey && cert.institutionPublicKey !== criteria.institutionPublicKey) {
+      if (
+        criteria.institutionPublicKey &&
+        cert.institutionPublicKey !== criteria.institutionPublicKey
+      ) {
         return false;
       }
-      
+
       // Filter by recipient ID
       if (criteria.recipientId && cert.recipientId !== criteria.recipientId) {
         return false;
       }
-      
+
       // Filter by certificate type
-      if (criteria.certificateType && cert.certificateType !== criteria.certificateType) {
+      if (
+        criteria.certificateType &&
+        cert.certificateType !== criteria.certificateType
+      ) {
         return false;
       }
-      
+
       // Filter by course name
-      if (criteria.courseName && !cert.courseName.toLowerCase().includes(criteria.courseName.toLowerCase())) {
+      if (
+        criteria.courseName &&
+        !cert.courseName
+          .toLowerCase()
+          .includes(criteria.courseName.toLowerCase())
+      ) {
         return false;
       }
-      
+
       return true;
     });
   }
@@ -339,18 +375,21 @@ class CertificateBlockchain {
     const totalCertificates = this.certificates.size;
     const revokedCount = this.revokedCertificates.size;
     const validCertificates = totalCertificates - revokedCount;
-    
+
     const institutionStats = this.institutionRegistry.getAllInstitutions();
-    
+
     return {
       totalBlocks: this.chain.length,
-      totalTransactions: this.chain.reduce((sum, block) => sum + block.transactions.length, 0),
+      totalTransactions: this.chain.reduce(
+        (sum, block) => sum + block.transactions.length,
+        0,
+      ),
       totalCertificates,
       validCertificates,
       revokedCertificates: revokedCount,
       totalInstitutions: institutionStats.length,
       authorizedValidators: this.authorizedValidators.size,
-      institutionStats
+      institutionStats,
     };
   }
 
@@ -375,7 +414,8 @@ class CertificateBlockchain {
       // Validate transactions in block
       for (const legacyTx of currentBlock.transactions) {
         try {
-          const transaction = CertificateTransaction.fromLegacyTransaction(legacyTx);
+          const transaction =
+            CertificateTransaction.fromLegacyTransaction(legacyTx);
           if (!transaction.isValid()) {
             return false;
           }
@@ -402,7 +442,8 @@ class CertificateBlockchain {
     for (const block of this.chain) {
       for (const legacyTx of block.transactions) {
         try {
-          const transaction = CertificateTransaction.fromLegacyTransaction(legacyTx);
+          const transaction =
+            CertificateTransaction.fromLegacyTransaction(legacyTx);
           this.processTransaction(transaction);
         } catch (error) {
           console.error("Error rebuilding from transaction:", error);
@@ -420,35 +461,38 @@ class CertificateBlockchain {
     this.walletCertificates.clear();
     this.walletIssuedCertificates.clear();
     this.walletReceivedCertificates.clear();
-    
+
     // Rebuild from all certificates
     for (const certificate of this.certificates.values()) {
       if (!certificate || !certificate.id) continue;
-      
+
       const issuerWallet = certificate.institutionPublicKey;
-      const recipientWallet = certificate.metadata && certificate.metadata.recipientWalletAddress;
-      
+      const recipientWallet =
+        certificate.metadata && certificate.metadata.recipientWalletAddress;
+
       // Track issued certificates for the issuer wallet (institution)
       if (issuerWallet) {
         if (!this.walletIssuedCertificates.has(issuerWallet)) {
           this.walletIssuedCertificates.set(issuerWallet, new Set());
         }
         this.walletIssuedCertificates.get(issuerWallet).add(certificate.id);
-        
+
         // Also add to general wallet certificates map
         if (!this.walletCertificates.has(issuerWallet)) {
           this.walletCertificates.set(issuerWallet, new Set());
         }
         this.walletCertificates.get(issuerWallet).add(certificate.id);
       }
-      
+
       // Track received certificates for the recipient wallet
       if (recipientWallet && recipientWallet !== issuerWallet) {
         if (!this.walletReceivedCertificates.has(recipientWallet)) {
           this.walletReceivedCertificates.set(recipientWallet, new Set());
         }
-        this.walletReceivedCertificates.get(recipientWallet).add(certificate.id);
-        
+        this.walletReceivedCertificates
+          .get(recipientWallet)
+          .add(certificate.id);
+
         // Also add to general wallet certificates map
         if (!this.walletCertificates.has(recipientWallet)) {
           this.walletCertificates.set(recipientWallet, new Set());
@@ -476,23 +520,24 @@ class CertificateBlockchain {
    * Get block by hash
    */
   getBlockByHash(hash) {
-    return this.chain.find(block => block.hash === hash);
+    return this.chain.find((block) => block.hash === hash);
   }
 
   /**
    * Get certificates owned by a wallet (both issued and received)
    */
   getWalletCertificates(walletAddress) {
-    const certificateIds = this.walletCertificates.get(walletAddress) || new Set();
+    const certificateIds =
+      this.walletCertificates.get(walletAddress) || new Set();
     const certificates = [];
-    
+
     for (const certId of certificateIds) {
       const certificate = this.certificates.get(certId);
       if (certificate) {
         certificates.push(certificate);
       }
     }
-    
+
     return certificates;
   }
 
@@ -500,16 +545,17 @@ class CertificateBlockchain {
    * Get certificates issued by a wallet (institution)
    */
   getWalletIssuedCertificates(walletAddress) {
-    const certificateIds = this.walletIssuedCertificates.get(walletAddress) || new Set();
+    const certificateIds =
+      this.walletIssuedCertificates.get(walletAddress) || new Set();
     const certificates = [];
-    
+
     for (const certId of certificateIds) {
       const certificate = this.certificates.get(certId);
       if (certificate) {
         certificates.push(certificate);
       }
     }
-    
+
     return certificates;
   }
 
@@ -517,16 +563,17 @@ class CertificateBlockchain {
    * Get certificates received by a wallet
    */
   getWalletReceivedCertificates(walletAddress) {
-    const certificateIds = this.walletReceivedCertificates.get(walletAddress) || new Set();
+    const certificateIds =
+      this.walletReceivedCertificates.get(walletAddress) || new Set();
     const certificates = [];
-    
+
     for (const certId of certificateIds) {
       const certificate = this.certificates.get(certId);
       if (certificate) {
         certificates.push(certificate);
       }
     }
-    
+
     return certificates;
   }
 
@@ -534,14 +581,19 @@ class CertificateBlockchain {
    * Get wallet certificate statistics
    */
   getWalletStats(walletAddress) {
-    const issuedCount = (this.walletIssuedCertificates.get(walletAddress) || new Set()).size;
-    const receivedCount = (this.walletReceivedCertificates.get(walletAddress) || new Set()).size;
-    const totalCount = (this.walletCertificates.get(walletAddress) || new Set()).size;
-    
+    const issuedCount = (
+      this.walletIssuedCertificates.get(walletAddress) || new Set()
+    ).size;
+    const receivedCount = (
+      this.walletReceivedCertificates.get(walletAddress) || new Set()
+    ).size;
+    const totalCount = (this.walletCertificates.get(walletAddress) || new Set())
+      .size;
+
     return {
       totalCertificates: totalCount,
       issuedCertificates: issuedCount,
-      receivedCertificates: receivedCount
+      receivedCertificates: receivedCount,
     };
   }
 
@@ -552,13 +604,13 @@ class CertificateBlockchain {
     try {
       // Get certificate from blockchain
       const certificate = this.getCertificateById(certificateId);
-      
+
       if (!certificate) {
         return {
           valid: false,
           status: "NOT_FOUND",
           message: "Certificate not found on the blockchain",
-          certificate: null
+          certificate: null,
         };
       }
 
@@ -568,7 +620,7 @@ class CertificateBlockchain {
           valid: false,
           status: "REVOKED",
           message: "Certificate has been revoked",
-          certificate: certificate
+          certificate: certificate,
         };
       }
 
@@ -576,9 +628,9 @@ class CertificateBlockchain {
       if (certificate.isExpired()) {
         return {
           valid: false,
-          status: "EXPIRED", 
+          status: "EXPIRED",
           message: "Certificate has expired",
-          certificate: certificate
+          certificate: certificate,
         };
       }
 
@@ -590,7 +642,7 @@ class CertificateBlockchain {
             valid: false,
             status: "INVALID",
             message: "Certificate signature is invalid",
-            certificate: certificate
+            certificate: certificate,
           };
         }
       } catch (error) {
@@ -598,7 +650,7 @@ class CertificateBlockchain {
           valid: false,
           status: "INVALID",
           message: "Certificate validation failed: " + error.message,
-          certificate: certificate
+          certificate: certificate,
         };
       }
 
@@ -608,7 +660,7 @@ class CertificateBlockchain {
           valid: false,
           status: "INVALID",
           message: "Certificate was issued by an unauthorized institution",
-          certificate: certificate
+          certificate: certificate,
         };
       }
 
@@ -618,15 +670,14 @@ class CertificateBlockchain {
         status: "VALID",
         message: "Certificate is valid and authentic",
         certificate: certificate,
-        verificationHistory: this.verificationHistory.get(certificateId) || []
+        verificationHistory: this.verificationHistory.get(certificateId) || [],
       };
-
     } catch (error) {
       return {
         valid: false,
         status: "ERROR",
         message: "Verification error: " + error.message,
-        certificate: null
+        certificate: null,
       };
     }
   }

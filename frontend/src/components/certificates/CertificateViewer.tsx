@@ -1,20 +1,29 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Calendar, 
-  Hash, 
-  CheckCircle, 
-  XCircle, 
+import React, { useState, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Calendar,
+  Hash,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   FileText,
   Award,
-  Clock
-} from 'lucide-react';
-import type { Certificate, CertificateVerification } from '@/types/certificates';
-import { useCertificateHelpers } from '@/hooks/useCertificates';
+  Clock,
+} from "lucide-react";
+import type {
+  Certificate,
+  CertificateVerification,
+} from "@/types/certificates";
+import { useCertificateHelpers } from "@/hooks/useCertificates";
 
 interface CertificateViewerProps {
   certificate: Certificate | null;
@@ -32,39 +41,44 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
   verifying = false,
 }) => {
   const [activeTab, setActiveTab] = useState("details");
-  const { getTypeLabel, formatDate, isExpired, getDaysUntilExpiration } = useCertificateHelpers();
+  const { getTypeLabel, formatDate, isExpired, getDaysUntilExpiration } =
+    useCertificateHelpers();
 
   const getVerificationStatusIcon = useMemo(() => {
     if (!verification) return null;
-    
+
     switch (verification.status) {
-      case 'VALID':
+      case "VALID":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'EXPIRED':
+      case "EXPIRED":
         return <Clock className="h-5 w-5 text-orange-500" />;
-      case 'REVOKED':
-      case 'INVALID':
+      case "REVOKED":
+      case "INVALID":
         return <XCircle className="h-5 w-5 text-red-500" />;
-      case 'NOT_FOUND':
+      case "NOT_FOUND":
         return <AlertTriangle className="h-5 w-5 text-gray-500" />;
       default:
         return <AlertTriangle className="h-5 w-5 text-gray-500" />;
     }
   }, [verification]);
 
-  const getVerificationStatusColor = useMemo((): "default" | "secondary" | "destructive" | "outline" => {
-    if (!verification) return 'outline';
-    
+  const getVerificationStatusColor = useMemo(():
+    | "default"
+    | "secondary"
+    | "destructive"
+    | "outline" => {
+    if (!verification) return "outline";
+
     switch (verification.status) {
-      case 'VALID':
-        return 'default'; // Will show as green with custom styling
-      case 'EXPIRED':
-        return 'secondary'; // Will show as orange with custom styling  
-      case 'REVOKED':
-      case 'INVALID':
-        return 'destructive';
+      case "VALID":
+        return "default"; // Will show as green with custom styling
+      case "EXPIRED":
+        return "secondary"; // Will show as orange with custom styling
+      case "REVOKED":
+      case "INVALID":
+        return "destructive";
       default:
-        return 'outline';
+        return "outline";
     }
   }, [verification]);
 
@@ -74,13 +88,13 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
       // Could add a toast notification here if available
       console.log(`${label} copied to clipboard`);
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+      console.error("Failed to copy to clipboard:", err);
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
     }
   };
@@ -118,40 +132,44 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
           <h1 className="text-3xl font-bold">{certificate.recipientName}</h1>
           <p className="text-lg text-gray-600">{certificate.institutionName}</p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {verification && (
             <div className="flex items-center gap-2">
               {getVerificationStatusIcon}
-              <Badge 
+              <Badge
                 variant={getVerificationStatusColor}
                 className={
-                  verification.status === 'VALID' 
-                    ? 'bg-green-100 text-green-800 border-green-200' 
-                    : verification.status === 'EXPIRED'
-                    ? 'bg-orange-100 text-orange-800 border-orange-200'
-                    : ''
+                  verification.status === "VALID"
+                    ? "bg-green-100 text-green-800 border-green-200"
+                    : verification.status === "EXPIRED"
+                      ? "bg-orange-100 text-orange-800 border-orange-200"
+                      : ""
                 }
               >
                 {verification.status}
               </Badge>
             </div>
           )}
-          
+
           {onVerify && (
-            <Button 
-              onClick={onVerify} 
+            <Button
+              onClick={onVerify}
               disabled={verifying}
               variant="outline"
-              aria-label={verifying ? 'Verifying certificate...' : 'Verify certificate authenticity'}
+              aria-label={
+                verifying
+                  ? "Verifying certificate..."
+                  : "Verify certificate authenticity"
+              }
             >
-              {verifying ? 'Verifying...' : 'Verify Certificate'}
+              {verifying ? "Verifying..." : "Verify Certificate"}
             </Button>
           )}
-          
+
           {onClose && (
-            <Button 
-              onClick={onClose} 
+            <Button
+              onClick={onClose}
               variant="outline"
               aria-label="Close certificate viewer"
             >
@@ -181,67 +199,93 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Recipient Name</label>
-                  <p className="text-lg font-semibold">{certificate.recipientName}</p>
+                  <label className="text-sm font-medium text-gray-600">
+                    Recipient Name
+                  </label>
+                  <p className="text-lg font-semibold">
+                    {certificate.recipientName}
+                  </p>
                 </div>
-                
+
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Recipient Wallet Address</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Recipient Wallet Address
+                  </label>
                   <p className="font-mono text-sm bg-gray-50 px-2 py-1 rounded border break-all">
                     {certificate.recipientId}
                   </p>
                 </div>
-                
+
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Certificate Type</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Certificate Type
+                  </label>
                   <Badge variant="secondary" className="mt-1">
                     {getTypeLabel(certificate.certificateType)}
                   </Badge>
                 </div>
-                
+
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Course Name</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Course Name
+                  </label>
                   <p className="text-lg">{certificate.courseName}</p>
                 </div>
-                
+
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Credential Level</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Credential Level
+                  </label>
                   <p className="text-lg">{certificate.credentialLevel}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Issuing Institution</label>
-                  <p className="text-lg font-semibold">{certificate.institutionName}</p>
+                  <label className="text-sm font-medium text-gray-600">
+                    Issuing Institution
+                  </label>
+                  <p className="text-lg font-semibold">
+                    {certificate.institutionName}
+                  </p>
                 </div>
-                
+
                 {certificate.grade && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Grade</label>
-                    <p className="text-lg font-bold text-blue-600">{certificate.grade}</p>
+                    <label className="text-sm font-medium text-gray-600">
+                      Grade
+                    </label>
+                    <p className="text-lg font-bold text-blue-600">
+                      {certificate.grade}
+                    </p>
                   </div>
                 )}
-                
+
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Issue Date</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Issue Date
+                  </label>
                   <p className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {formatDate(certificate.issueDate)}
                   </p>
                 </div>
-                
+
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Completion Date</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Completion Date
+                  </label>
                   <p className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {formatDate(certificate.completionDate)}
                   </p>
                 </div>
-                
+
                 {certificate.expirationDate && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Expiration Date</label>
+                    <label className="text-sm font-medium text-gray-600">
+                      Expiration Date
+                    </label>
                     <div className="flex items-center gap-2">
                       <p className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
@@ -250,11 +294,16 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                       {certificateExpired && (
                         <Badge variant="destructive">Expired</Badge>
                       )}
-                      {!certificateExpired && daysUntilExpiration !== null && daysUntilExpiration <= 30 && (
-                        <Badge variant="outline" className="text-orange-600 border-orange-600">
-                          Expires in {daysUntilExpiration} days
-                        </Badge>
-                      )}
+                      {!certificateExpired &&
+                        daysUntilExpiration !== null &&
+                        daysUntilExpiration <= 30 && (
+                          <Badge
+                            variant="outline"
+                            className="text-orange-600 border-orange-600"
+                          >
+                            Expires in {daysUntilExpiration} days
+                          </Badge>
+                        )}
                     </div>
                   </div>
                 )}
@@ -263,25 +312,28 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
           </Card>
 
           {/* Additional Metadata */}
-          {certificate.metadata && Object.keys(certificate.metadata).length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Additional Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(certificate.metadata).map(([key, value]) => (
-                    <div key={key}>
-                      <label className="text-sm font-medium text-gray-600 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                      </label>
-                      <p className="text-sm">{String(value)}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {certificate.metadata &&
+            Object.keys(certificate.metadata).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Additional Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(certificate.metadata).map(
+                      ([key, value]) => (
+                        <div key={key}>
+                          <label className="text-sm font-medium text-gray-600 capitalize">
+                            {key.replace(/([A-Z])/g, " $1").toLowerCase()}
+                          </label>
+                          <p className="text-sm">{String(value)}</p>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
         </TabsContent>
 
         <TabsContent value="technical" className="space-y-6">
@@ -297,7 +349,9 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">Certificate ID</label>
+                <label className="text-sm font-medium text-gray-600">
+                  Certificate ID
+                </label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
                     {certificate.id}
@@ -305,16 +359,20 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(certificate.id, 'Certificate ID')}
+                    onClick={() =>
+                      copyToClipboard(certificate.id, "Certificate ID")
+                    }
                     aria-label="Copy certificate ID to clipboard"
                   >
                     Copy
                   </Button>
                 </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-gray-600">Certificate Hash</label>
+                <label className="text-sm font-medium text-gray-600">
+                  Certificate Hash
+                </label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all">
                     {certificate.hash}
@@ -322,15 +380,19 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(certificate.hash, 'Certificate Hash')}
+                    onClick={() =>
+                      copyToClipboard(certificate.hash, "Certificate Hash")
+                    }
                   >
                     Copy
                   </Button>
                 </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-gray-600">Institution Public Key</label>
+                <label className="text-sm font-medium text-gray-600">
+                  Institution Public Key
+                </label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all">
                     {certificate.institutionPublicKey}
@@ -338,15 +400,22 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(certificate.institutionPublicKey, 'Institution Public Key')}
+                    onClick={() =>
+                      copyToClipboard(
+                        certificate.institutionPublicKey,
+                        "Institution Public Key",
+                      )
+                    }
                   >
                     Copy
                   </Button>
                 </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-gray-600">Digital Signature</label>
+                <label className="text-sm font-medium text-gray-600">
+                  Digital Signature
+                </label>
                 <div className="flex items-center gap-2 mt-1">
                   <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all">
                     {certificate.signature}
@@ -354,24 +423,33 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(certificate.signature, 'Digital Signature')}
+                    onClick={() =>
+                      copyToClipboard(
+                        certificate.signature,
+                        "Digital Signature",
+                      )
+                    }
                   >
                     Copy
                   </Button>
                 </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-gray-600">Timestamp</label>
+                <label className="text-sm font-medium text-gray-600">
+                  Timestamp
+                </label>
                 <p className="text-sm font-mono bg-gray-50 px-2 py-1 rounded border">
                   {formatDate(certificate.timestamp)}
                 </p>
               </div>
-              
+
               {/* Wallet Ownership Information */}
               {certificate.metadata?.recipientWalletAddress && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Recipient Wallet Address</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Recipient Wallet Address
+                  </label>
                   <div className="flex items-center gap-2 mt-1">
                     <code className="bg-green-100 px-2 py-1 rounded text-sm font-mono break-all">
                       {certificate.metadata.recipientWalletAddress}
@@ -379,7 +457,12 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copyToClipboard(certificate.metadata?.recipientWalletAddress || '', 'Recipient Wallet Address')}
+                      onClick={() =>
+                        copyToClipboard(
+                          certificate.metadata?.recipientWalletAddress || "",
+                          "Recipient Wallet Address",
+                        )
+                      }
                     >
                       Copy
                     </Button>
@@ -411,36 +494,50 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
                     {getVerificationStatusIcon}
                     <div>
                       <p className="font-medium">
-                        Status: <span className={
-                          verification.status === 'VALID' ? 'text-green-600' :
-                          verification.status === 'EXPIRED' ? 'text-orange-600' :
-                          verification.status === 'REVOKED' || verification.status === 'INVALID' ? 'text-red-600' :
-                          'text-gray-600'
-                        }>
+                        Status:{" "}
+                        <span
+                          className={
+                            verification.status === "VALID"
+                              ? "text-green-600"
+                              : verification.status === "EXPIRED"
+                                ? "text-orange-600"
+                                : verification.status === "REVOKED" ||
+                                    verification.status === "INVALID"
+                                  ? "text-red-600"
+                                  : "text-gray-600"
+                          }
+                        >
                           {verification.status}
                         </span>
                       </p>
-                      <p className="text-sm text-gray-600">{verification.message}</p>
+                      <p className="text-sm text-gray-600">
+                        {verification.message}
+                      </p>
                     </div>
                   </div>
-                  
+
                   {verification.valid && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-green-500" />
-                        <p className="font-medium text-green-800">Certificate Verified</p>
+                        <p className="font-medium text-green-800">
+                          Certificate Verified
+                        </p>
                       </div>
                       <p className="text-sm text-green-700 mt-1">
-                        This certificate has been successfully verified on the blockchain and is authentic.
+                        This certificate has been successfully verified on the
+                        blockchain and is authentic.
                       </p>
                     </div>
                   )}
-                  
+
                   {!verification.valid && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <div className="flex items-center gap-2">
                         <XCircle className="h-5 w-5 text-red-500" />
-                        <p className="font-medium text-red-800">Verification Failed</p>
+                        <p className="font-medium text-red-800">
+                          Verification Failed
+                        </p>
                       </div>
                       <p className="text-sm text-red-700 mt-1">
                         {verification.message}
@@ -451,13 +548,16 @@ const CertificateViewer: React.FC<CertificateViewerProps> = ({
               ) : (
                 <div className="text-center py-8">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Verification Data</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Verification Data
+                  </h3>
                   <p className="text-gray-600 mb-4">
-                    Click "Verify Certificate" to check the authenticity of this certificate.
+                    Click "Verify Certificate" to check the authenticity of this
+                    certificate.
                   </p>
                   {onVerify && (
                     <Button onClick={onVerify} disabled={verifying}>
-                      {verifying ? 'Verifying...' : 'Verify Certificate'}
+                      {verifying ? "Verifying..." : "Verify Certificate"}
                     </Button>
                   )}
                 </div>

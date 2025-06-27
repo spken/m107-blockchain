@@ -7,6 +7,7 @@ Das Projekt "Dezentrale Blockchain für Bildungszertifikate" ist eine spezialisi
 ## 1. Technologie-Stack und Architektur
 
 ### 1.1 Backend-Technologien
+
 - **Runtime**: Node.js
 - **Framework**: Express.js für RESTful API
 - **Konsensus**: Proof of Authority (PoA)
@@ -16,18 +17,20 @@ Das Projekt "Dezentrale Blockchain für Bildungszertifikate" ist eine spezialisi
 - **Dependency Management**: npm
 
 **Kernbibliotheken:**
+
 ```json
 {
-  "elliptic": "^6.5.4",        // Kryptographische Operationen
-  "crypto-js": "^4.2.0",       // Hash-Funktionen
-  "express": "^4.18.2",        // Web-Framework
-  "uuid": "^9.0.1",           // Eindeutige IDs
-  "body-parser": "^1.20.2",   // Request-Parsing
-  "cors": "^2.8.5"            // Cross-Origin Resource Sharing
+  "elliptic": "^6.5.4", // Kryptographische Operationen
+  "crypto-js": "^4.2.0", // Hash-Funktionen
+  "express": "^4.18.2", // Web-Framework
+  "uuid": "^9.0.1", // Eindeutige IDs
+  "body-parser": "^1.20.2", // Request-Parsing
+  "cors": "^2.8.5" // Cross-Origin Resource Sharing
 }
 ```
 
 ### 1.2 Frontend-Technologien
+
 - **Framework**: React 19.1.0 mit TypeScript
 - **Build Tool**: Vite 6.3.5
 - **Styling**: TailwindCSS 4.1.10
@@ -36,6 +39,7 @@ Das Projekt "Dezentrale Blockchain für Bildungszertifikate" ist eine spezialisi
 - **State Management**: React Hooks (useState, useEffect, useCallback)
 
 **Kernbibliotheken:**
+
 ```json
 {
   "react": "^19.1.0",
@@ -49,6 +53,7 @@ Das Projekt "Dezentrale Blockchain für Bildungszertifikate" ist eine spezialisi
 ### 1.3 Architekturdesign
 
 #### 1.3.1 Backend-Architektur
+
 Das Backend folgt einer modularen Architektur mit klarer Trennung der Verantwortlichkeiten:
 
 ```
@@ -72,12 +77,14 @@ backend/
 ```
 
 **Spezialisierung für Bildungszertifikate:**
+
 - Keine Kryptowährungs-Features (Balances, Mining Rewards, Fees)
 - Fokus auf Zertifikats-Authentifizierung und -Verifikation
 - Institutions-Registry für autorisierte Bildungseinrichtungen
 - Proof of Authority statt Proof of Work für Energieeffizienz
 
 #### 1.3.2 Frontend-Architektur
+
 Das Frontend verwendet eine komponentenbasierte Architektur mit TypeScript:
 
 ```
@@ -117,10 +124,11 @@ frontend/src/
 Das System implementiert ein 3-Node-Netzwerk mit verschiedenen Institutionstypen:
 
 1. **University Node (Port 3001)**: Universitäten für akademische Abschlüsse
-2. **Vocational School Node (Port 3002)**: Berufsschulen für praktische Qualifikationen  
+2. **Vocational School Node (Port 3002)**: Berufsschulen für praktische Qualifikationen
 3. **Certification Provider Node (Port 3003)**: Zertifizierungsanbieter für Weiterbildungen
 
 **Konsensus-Mechanismus:**
+
 - 2-of-3 Validator-Konsensus erforderlich
 - Nur autorisierte Institutionen können Blöcke validieren
 - Proof of Authority für schnelle Transaktionszeiten ohne Mining
@@ -130,7 +138,9 @@ Das System implementiert ein 3-Node-Netzwerk mit verschiedenen Institutionstypen
 ### 2.1 Benutzeroberflächen-Design
 
 #### 2.1.1 Design-System
+
 Das Frontend nutzt ein modernes Design-System basierend auf:
+
 - **TailwindCSS** für utility-first Styling
 - **Shadcn/UI** Pattern für konsistente Komponenten
 - **Lucide Icons** für einheitliche Ikonographie
@@ -139,6 +149,7 @@ Das Frontend nutzt ein modernes Design-System basierend auf:
 #### 2.1.2 Haupt-Screens
 
 **1. Dashboard (Zertifikatsverwaltung)**
+
 ```typescript
 // CertificateDashboard.tsx - Hauptfunktionalitäten:
 - Übersicht aller Zertifikate in Karten-Layout
@@ -149,6 +160,7 @@ Das Frontend nutzt ein modernes Design-System basierend auf:
 ```
 
 **2. Zertifikat-Ausstellung**
+
 ```typescript
 // CertificateIssuanceForm.tsx - Features:
 - Mehrstufiger Wizard für Zertifikats-Erstellung
@@ -159,6 +171,7 @@ Das Frontend nutzt ein modernes Design-System basierend auf:
 ```
 
 **3. Zertifikat-Anzeige & Verifikation**
+
 ```typescript
 // CertificateViewer.tsx - Funktionen:
 - Detaillierte Zertifikats-Informationen
@@ -170,9 +183,11 @@ Das Frontend nutzt ein modernes Design-System basierend auf:
 ### 2.2 State Management und Datenfluss
 
 #### 2.2.1 Custom Hooks Pattern
+
 Das Frontend verwendet spezialisierte React Hooks für verschiedene Bereiche:
 
 **useBlockchain Hook:**
+
 ```typescript
 export const useBlockchain = () => {
   const [state, setState] = useState<UseBlockchainState>({
@@ -192,6 +207,7 @@ export const useBlockchain = () => {
 ```
 
 **useCertificates Hook:**
+
 ```typescript
 export const useCertificates = () => {
   // Zertifikats-spezifische State-Verwaltung
@@ -201,21 +217,23 @@ export const useCertificates = () => {
 ```
 
 #### 2.2.2 API-Integration
+
 Typisierte API-Services für Backend-Kommunikation:
 
 ```typescript
 class CertificateAPI {
   // RESTful API-Endpunkte für Zertifikate
-  async issueCertificate(data: CertificateFormData): Promise<Certificate>
-  async verifyCertificate(id: string): Promise<CertificateVerification>
-  async searchCertificates(criteria: SearchCriteria): Promise<Certificate[]>
-  async getInstitutions(): Promise<Institution[]>
+  async issueCertificate(data: CertificateFormData): Promise<Certificate>;
+  async verifyCertificate(id: string): Promise<CertificateVerification>;
+  async searchCertificates(criteria: SearchCriteria): Promise<Certificate[]>;
+  async getInstitutions(): Promise<Institution[]>;
 }
 ```
 
 ### 2.3 Benutzerinteraktion und UX
 
 #### 2.3.1 Interaktive Features
+
 - **Echtzeit-Suche**: Sofortige Filterung von Zertifikaten während der Eingabe
 - **Status-Indikatoren**: Farbkodierte Icons für Zertifikats-Status
 - **Responsive Navigation**: Tab-basierte Navigation zwischen verschiedenen Bereichen
@@ -223,6 +241,7 @@ class CertificateAPI {
 - **Error Handling**: Benutzerfreundliche Fehlermeldungen mit Retry-Funktionalität
 
 #### 2.3.2 Accessibility und Performance
+
 - **Keyboard Navigation**: Vollständige Tastatur-Unterstützung
 - **Screen Reader**: Semantische HTML-Struktur und ARIA-Labels
 - **Performance**: Code-Splitting und lazy Loading für optimale Ladezeiten
@@ -238,14 +257,18 @@ class CertificateAPI {
 Integration einer komplexen Blockchain-Backend-API in ein React-Frontend mit TypeScript-Typisierung.
 
 **Lösung:**
+
 ```typescript
 // Typisierte API-Services mit Error Handling
 class BlockchainAPI {
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    options?: RequestInit,
+  ): Promise<T> {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
+
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         headers: { "Content-Type": "application/json", ...options?.headers },
         signal: controller.signal,
@@ -253,15 +276,20 @@ class BlockchainAPI {
       });
 
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       return response.json();
     } catch (error) {
       // Erweiterte Fehlerbehandlung für Netzwerkprobleme
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        throw new Error('ERR_CONNECTION_REFUSED: Cannot connect to backend server');
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "ERR_CONNECTION_REFUSED: Cannot connect to backend server",
+        );
       }
       throw error;
     }
@@ -275,6 +303,7 @@ class BlockchainAPI {
 Implementierung sicherer digitaler Signaturen für Zertifikate mit ECDSA.
 
 **Lösung:**
+
 ```javascript
 // Certificate.js - Digitale Signatur-Implementierung
 signCertificate(institutionPrivateKey) {
@@ -284,7 +313,7 @@ signCertificate(institutionPrivateKey) {
 
   const keyPair = ec.keyFromPrivate(institutionPrivateKey);
   const publicKeyFromPrivate = keyPair.getPublic("hex");
-  
+
   if (publicKeyFromPrivate !== this.institutionPublicKey) {
     throw new Error("Private key does not match institution's public key");
   }
@@ -301,23 +330,28 @@ signCertificate(institutionPrivateKey) {
 Synchronisation zwischen 3 Blockchain-Nodes ohne zentrale Koordination.
 
 **Lösung:**
+
 ```javascript
 // CertificateNode.js - Automatische Block-Verteilung
 const performAutoProcessing = async () => {
   if (certificateBlockchain.getPendingTransactions().length === 0) return;
-  
-  const newBlock = certificateBlockchain.minePendingTransactions(nodeInstitution.publicKey);
-  
+
+  const newBlock = certificateBlockchain.minePendingTransactions(
+    nodeInstitution.publicKey,
+  );
+
   // Broadcast an alle Netzwerk-Nodes
-  const requestPromises = certificateBlockchain.networkNodes.map((networkNodeUrl) => {
-    return rp({
-      uri: networkNodeUrl + "/receive-new-block",
-      method: "POST",
-      body: { newBlock },
-      json: true
-    });
-  });
-  
+  const requestPromises = certificateBlockchain.networkNodes.map(
+    (networkNodeUrl) => {
+      return rp({
+        uri: networkNodeUrl + "/receive-new-block",
+        method: "POST",
+        body: { newBlock },
+        json: true,
+      });
+    },
+  );
+
   await Promise.all(requestPromises);
 };
 ```
@@ -330,17 +364,18 @@ const performAutoProcessing = async () => {
 Personenbezogene Daten in unveränderlicher Blockchain vs. DSGVO-Recht auf Vergessenwerden.
 
 **Implementierte Lösung:**
+
 ```javascript
 // Nur notwendige Daten in der Blockchain
 class Certificate {
   constructor({
-    recipientName,      // Minimal erforderlich
-    recipientId,        // Anonymisierte ID
-    institutionName,    // Öffentliche Information
-    certificateType,    // Kategorie-Information
-    courseName,         // Kurs-Bezeichnung
+    recipientName, // Minimal erforderlich
+    recipientId, // Anonymisierte ID
+    institutionName, // Öffentliche Information
+    certificateType, // Kategorie-Information
+    courseName, // Kurs-Bezeichnung
     // Sensible Daten werden extern gespeichert
-    metadata = {}       // Referenzen zu externen Datenquellen
+    metadata = {}, // Referenzen zu externen Datenquellen
   }) {
     // Hash-basierte Speicherung für Verifikation
     this.hash = this.calculateHash();
@@ -356,31 +391,33 @@ class Certificate {
 Grosse Mengen von Zertifikats-Daten können die Frontend-Performance beeinträchtigen.
 
 **Lösung:**
+
 ```typescript
 // Lazy Loading und Virtualisierung
 const useCertificates = () => {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Pagination für grosse Datenmengen
-  const searchCertificates = useCallback(async (
-    criteria: SearchCriteria,
-    page: number = 1,
-    limit: number = 20
-  ) => {
-    setLoading(true);
-    try {
-      const results = await api.searchCertificates({
-        ...criteria,
-        page,
-        limit
-      });
-      setCertificates(prev => page === 1 ? results : [...prev, ...results]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  
+  const searchCertificates = useCallback(
+    async (criteria: SearchCriteria, page: number = 1, limit: number = 20) => {
+      setLoading(true);
+      try {
+        const results = await api.searchCertificates({
+          ...criteria,
+          page,
+          limit,
+        });
+        setCertificates((prev) =>
+          page === 1 ? results : [...prev, ...results],
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   return { certificates, searchCertificates, loading };
 };
 ```
@@ -391,24 +428,29 @@ const useCertificates = () => {
 Wachsende Blockchain-Grösse führt zu längeren Synchronisationszeiten.
 
 **Lösung:**
+
 ```javascript
 // CertificateBlockchain.js - Optimierte Datenstrukturen
 class CertificateBlockchain {
   constructor() {
     // Separate Maps für verschiedene Zugriffsmuster
-    this.certificates = new Map();              // O(1) Lookup by ID
-    this.walletCertificates = new Map();        // O(1) Wallet-Zuordnung
-    this.institutionCertificates = new Map();   // O(1) Institution-Lookup
-    this.revokedCertificates = new Set();       // O(1) Revocation-Check
+    this.certificates = new Map(); // O(1) Lookup by ID
+    this.walletCertificates = new Map(); // O(1) Wallet-Zuordnung
+    this.institutionCertificates = new Map(); // O(1) Institution-Lookup
+    this.revokedCertificates = new Set(); // O(1) Revocation-Check
   }
-  
+
   // Effiziente Suchfunktionen
   searchCertificates(criteria = {}) {
     const allCertificates = this.getAllCertificates();
-    return allCertificates.filter(cert => {
+    return allCertificates.filter((cert) => {
       // Optimierte Filter-Implementierung
-      if (criteria.institutionName && 
-          !cert.institutionName.toLowerCase().includes(criteria.institutionName.toLowerCase())) {
+      if (
+        criteria.institutionName &&
+        !cert.institutionName
+          .toLowerCase()
+          .includes(criteria.institutionName.toLowerCase())
+      ) {
         return false;
       }
       return true;
@@ -425,19 +467,19 @@ class CertificateBlockchain {
 // CertificateTest.js - Umfassende Test-Suite
 const testCertificateBlockchain = () => {
   console.log("🧪 Testing Certificate Blockchain...");
-  
+
   // Test 1: Certificate Creation and Validation
   const certificate = new Certificate({
     recipientName: "John Doe",
     institutionName: "University of Technology",
     certificateType: "BACHELOR",
-    courseName: "Computer Science"
+    courseName: "Computer Science",
   });
-  
+
   // Test 2: Digital Signature Verification
   certificate.signCertificate(institutionPrivateKey);
   assert(certificate.isValid(), "Certificate signature should be valid");
-  
+
   // Test 3: Blockchain Integration
   blockchain.issueCertificate(certificate, institutionPrivateKey);
   const retrieved = blockchain.getCertificateById(certificate.id);
@@ -472,7 +514,7 @@ cd backend
 npm install
 npm run nodes  # Startet alle 3 Institutionen parallel
 
-# Frontend Setup  
+# Frontend Setup
 cd frontend
 npm install
 npm run dev    # Entwicklungsserver auf Port 5173
@@ -481,12 +523,14 @@ npm run dev    # Entwicklungsserver auf Port 5173
 ### 5.2 Production Considerations
 
 **Backend:**
+
 - HTTPS für alle Node-Kommunikation
 - Environment-spezifische Konfiguration
 - Load Balancing für Multiple Instances
 - Database Integration für persistente Speicherung
 
 **Frontend:**
+
 - Build-Optimierung mit Vite
 - CDN-Integration für statische Assets
 - Progressive Web App (PWA) Features
@@ -495,6 +539,7 @@ npm run dev    # Entwicklungsserver auf Port 5173
 ## 6. Zukünftige Entwicklungen und Verbesserungen
 
 ### 6.1 Geplante Features
+
 1. **Mobile App**: React Native Implementation
 2. **QR-Code Integration**: Offline-Verifikation
 3. **Smart Contracts**: Ethereum-Integration für internationale Anerkennung
@@ -502,6 +547,7 @@ npm run dev    # Entwicklungsserver auf Port 5173
 5. **Backup & Recovery**: Distributed Backup-Strategien
 
 ### 6.2 Technische Verbesserungen
+
 1. **GraphQL API**: Ersetzen der REST-API für effizientere Datenabfragen
 2. **WebSocket Integration**: Echtzeit-Updates ohne Polling
 3. **Mikroservice-Architektur**: Aufteilen in spezialisierte Services
@@ -512,6 +558,7 @@ npm run dev    # Entwicklungsserver auf Port 5173
 Das Projekt demonstriert erfolgreich die Implementierung einer spezialisierten Blockchain-Lösung für Bildungszertifikate. Die Kombination aus sicherer Backend-Architektur mit Proof of Authority Konsensus und modernem React-Frontend zeigt einen durchdachten Ansatz für das Management digitaler Bildungsnachweise.
 
 **Besondere Stärken des Projekts:**
+
 - **Spezialisierung**: Fokus auf Bildungszertifikate statt generische Blockchain
 - **Benutzerfreundlichkeit**: Intuitive Web-Oberfläche für alle Stakeholder
 - **Sicherheit**: Kryptographische Signaturen und unveränderliche Aufzeichnungen
@@ -525,6 +572,7 @@ Die umgesetzten Lösungen für Datenschutz, Performance und Benutzerinteraktion 
 ### 8.1 Backend-Funktionalitätstests
 
 #### 8.1.1 Certificate Blockchain Core Tests
+
 **Status: ✅ VOLLSTÄNDIG ERFOLGREICH**
 
 Die durchgeführten Tests validierten alle Kernfunktionen der Blockchain:
@@ -533,18 +581,20 @@ Die durchgeführten Tests validierten alle Kernfunktionen der Blockchain:
 🧪 Certificate Blockchain Test Suite
 =====================================
 ✅ Certificate Creation and Validation - PASSED
-✅ Institution Registry - PASSED  
+✅ Institution Registry - PASSED
 ✅ Blockchain Integration - PASSED
 ✅ End-to-End Certificate Lifecycle - PASSED
 ```
 
 **Detaillierte Resultate:**
+
 - **Kryptographische Funktionen**: ECDSA-Schlüsselgenerierung und digitale Signatur funktional
 - **Blockchain-Integration**: Block-Mining mit PoA erfolgreich (Hash: 00df4abc3b...)
 - **Multi-Institution-Support**: 3-Node-Netzwerk erfolgreich validiert
 - **Zertifikats-Lifecycle**: Vollständiger Ausstellungs-/Verifikationsprozess funktional
 
 #### 8.1.2 Sicherheitsvalidierung
+
 **Kryptographische Sicherheit: ✅ VALIDIERT**
 
 ```javascript
@@ -558,6 +608,7 @@ Die durchgeführten Tests validierten alle Kernfunktionen der Blockchain:
 ### 8.2 Frontend-Build und TypeScript-Validierung
 
 #### 8.2.1 Build-Performance
+
 **Status: ✅ OPTIMIERT**
 
 ```bash
@@ -569,6 +620,7 @@ Build-Resultate:
 ```
 
 **Performance-Metriken:**
+
 - Gzip-Komprimierung: 72% Reduktion
 - CSS-Optimierung: TailwindCSS mit Purging
 - Code-Splitting: Automatisch durch Vite
@@ -576,12 +628,14 @@ Build-Resultate:
 ### 8.3 Identifizierte Verbesserungsbereiche
 
 #### 8.3.1 Test-Infrastruktur-Lücken
+
 **Problem:** API-Integrationstests schlugen aufgrund fehlender Test-Automatisierung fehl
 
 **Empfohlene Lösung:**
+
 ```yaml
 # docker-compose.test.yml
-version: '3.8'
+version: "3.8"
 services:
   test-backend:
     build: ./backend
@@ -599,9 +653,11 @@ services:
 ```
 
 #### 8.3.2 Produktions-Bereitschaft
+
 **Status: ⚠️ VERBESSERUNGSBEDARF**
 
 **Fehlende Komponenten:**
+
 - Persistente Datenbank-Integration
 - Container-Deployment-Strategie
 - Monitoring und Logging-Infrastructure
@@ -612,77 +668,98 @@ services:
 ### 9.1 Erfüllungsgrad der Hauptziele
 
 #### 9.1.1 ✅ Sofortige Verifikation (90% erfüllt)
+
 **Implementiert:**
+
 - API-Endpunkte für Echtzeit-Verifikation
 - O(1) Zertifikats-Lookup durch optimierte Datenstrukturen
 - PoA-Konsensus für schnelle Block-Zeiten
 
 **Verbesserungspotential:**
+
 - WebSocket-Integration für Push-Benachrichtigungen
 - Caching-Strategien für häufige Anfragen
 
 #### 9.1.2 ✅ Fälschungssicherheit (95% erfüllt)
+
 **Implementiert:**
+
 - Kryptographische Signaturen (ECDSA)
 - Unveränderliche Blockchain-Storage
 - Hash-basierte Integritätsprüfung
 
 **Stärken:**
+
 - Bitcoin-Standard Kryptographie (secp256k1)
 - Vollständige Signatur-Validierung
 - Chain-of-Trust durch Institution Registry
 
 #### 9.1.3 ⚠️ Einfache Verwaltung (70% erfüllt)
+
 **Implementiert:**
+
 - Intuitive React-Frontend
 - RESTful API-Design
 - Typisierte TypeScript-Integration
 
 **Verbesserungsbedarf:**
+
 - Benutzer-Onboarding-Prozess
 - Administrative Tools für Institutionen
 - Bulk-Operations für Zertifikate
 
 #### 9.1.4 ⚠️ Internationale Kompatibilität (60% erfüllt)
+
 **Grundlagen vorhanden:**
+
 - JSON-basierte Datenformate
 - REST-API für Integration
 - Multi-Institution-Support
 
 **Fehlende Komponenten:**
+
 - W3C Verifiable Credentials Standard
 - EU Digital Identity Wallet Integration
 - Mehrsprachigkeit (i18n)
 
 #### 9.1.5 ⚠️ Kostenreduktion (65% erfüllt)
+
 **Effizienzen realisiert:**
+
 - PoA statt PoW (energieeffizient)
 - Automatisierte Verifikation
 - Reduzierte manuelle Prozesse
 
 **Limitierungen:**
+
 - Einmalige Implementierungskosten hoch
 - Wartungs- und Betriebskosten noch nicht optimiert
 
 ### 9.2 Technische Architektur-Bewertung
 
 #### 9.2.1 Backend-Architektur: 8/10
+
 **Stärken:**
+
 - Modulare, klar getrennte Verantwortlichkeiten
 - Spezialisierung auf Bildungszertifikate (keine Kryptowährung)
 - Solide kryptographische Grundlagen
 
 **Verbesserungsbereiche:**
+
 - Fehlende Persistenz-Layer
 - Monolithische Node-Struktur
 
 #### 9.2.2 Frontend-Architektur: 8.5/10
+
 **Stärken:**
+
 - Moderne React + TypeScript Stack
 - Komponentenbasiertes Design
 - Responsive und zugänglich
 
 **Verbesserungsbereiche:**
+
 - Fehlende automatisierte Tests
 - State Management könnte zentralisiert werden
 
@@ -691,6 +768,7 @@ services:
 #### 9.3.1 Hyperledger Fabric vs. Custom Blockchain
 
 **Custom Blockchain (Aktuell):**
+
 ```
 Vorteile:
 + Vollständige Kontrolle über Features
@@ -704,6 +782,7 @@ Nachteile:
 ```
 
 **Hyperledger Fabric (Alternative):**
+
 ```
 Vorteile:
 + Enterprise-ready
@@ -722,6 +801,7 @@ Nachteile:
 #### 9.3.2 Zentralisierte vs. Dezentrale Architektur
 
 **Aktuelle dezentrale Lösung:**
+
 ```
 Bewertung: 7.5/10
 
@@ -737,6 +817,7 @@ Nachteile:
 ```
 
 **Alternative zentralisierte Lösung:**
+
 ```
 Potentielle Bewertung: 6/10
 
@@ -756,18 +837,22 @@ Nachteile:
 ## 10. Roadmap für Produktions-Einführung
 
 ### 10.1 Phase 1: Stabilisierung (Monate 1-3)
+
 **Kritische Verbesserungen:**
+
 1. **Persistenz-Integration**
+
    ```javascript
    // PostgreSQL Integration
    class CertificateDatabase {
      async storeCertificate(certificate) {
-       return await this.db.query('INSERT INTO certificates...');
+       return await this.db.query("INSERT INTO certificates...");
      }
    }
    ```
 
 2. **Test-Automatisierung**
+
    ```yaml
    # CI/CD Pipeline
    test:
@@ -787,14 +872,18 @@ Nachteile:
    ```
 
 ### 10.2 Phase 2: Skalierung (Monate 4-6)
+
 **Skalierungsmaßnahmen:**
+
 1. **Mikroservice-Architektur**
 2. **Load Balancing**
 3. **Container-Deployment (Docker/Kubernetes)**
 4. **Monitoring und Alerting**
 
 ### 10.3 Phase 3: Erweiterung (Monate 7-12)
+
 **Advanced Features:**
+
 1. **Mobile App (React Native)**
 2. **Smart Contracts Integration**
 3. **Cross-Chain Interoperabilität**
@@ -803,6 +892,7 @@ Nachteile:
 ## 11. Gesamtfazit und Handlungsempfehlungen
 
 ### 11.1 Projektstatus: Erfolgreicher Proof of Concept
+
 **Bewertung: 7.5/10**
 
 Das Projekt demonstriert erfolgreich die technische Machbarkeit einer Blockchain-basierten Lösung für Bildungszertifikate. Die Spezialisierung auf den Bildungsbereich und der Verzicht auf Kryptowährungs-Features zeigen eine durchdachte Architekturentscheidung.
@@ -810,18 +900,21 @@ Das Projekt demonstriert erfolgreich die technische Machbarkeit einer Blockchain
 ### 11.2 Kritische Erfolgsfaktoren für Produktions-Einführung
 
 #### 11.2.1 Sofortmaßnahmen (Kritisch)
+
 1. **Persistenz-Layer implementieren**
 2. **Umfassende Test-Suite entwickeln**
 3. **DSGVO-Compliance vervollständigen**
 4. **Deployment-Automatisierung**
 
 #### 11.2.2 Strategische Entwicklungen (Wichtig)
+
 1. **Standards-Compliance (W3C, EU)**
 2. **Internationale Pilotprojekte**
 3. **Community und Ökosystem-Aufbau**
 4. **Governance-Modell entwickeln**
 
 ### 11.3 Empfehlung
+
 **GO für Weiterentwicklung:** Das Projekt zeigt ausreichend Potential für eine Produktions-Implementierung, vorausgesetzt die identifizierten kritischen Verbesserungen werden umgesetzt.
 
 Die innovative Herangehensweise, bewusst eine spezialisierte Bildungs-Blockchain zu entwickeln statt einer generischen Lösung, positioniert das Projekt gut für den Markt der digitalen Bildungsnachweise.

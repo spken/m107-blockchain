@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { 
-  Wallet, 
-  UseWalletsState, 
-  UseWalletDetailsState
-} from '@/types/certificates';
-import { api } from '@/services/certificateApi';
+import { useState, useEffect, useCallback } from "react";
+import type {
+  Wallet,
+  UseWalletsState,
+  UseWalletDetailsState,
+} from "@/types/certificates";
+import { api } from "@/services/certificateApi";
 
 /**
  * Hook for managing wallets
@@ -19,45 +19,47 @@ export const useWallets = () => {
 
   // Fetch all wallets
   const fetchWallets = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const response = await api.getWallets();
-      setState(prev => ({ 
-        ...prev, 
-        wallets: response.wallets, 
-        loading: false 
+      setState((prev) => ({
+        ...prev,
+        wallets: response.wallets,
+        loading: false,
       }));
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch wallets'
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch wallets",
       }));
     }
   }, []);
 
   // Create new wallet
   const createWallet = useCallback(async (label?: string) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const response = await api.createWallet(label);
       if (response.success && response.wallet) {
-        setState(prev => ({ 
-          ...prev, 
+        setState((prev) => ({
+          ...prev,
           wallets: [...prev.wallets, response.wallet!],
-          loading: false 
+          loading: false,
         }));
         return response.wallet;
       } else {
-        throw new Error(response.message || 'Failed to create wallet');
+        throw new Error(response.message || "Failed to create wallet");
       }
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to create wallet'
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to create wallet",
       }));
       throw error;
     }
@@ -65,7 +67,7 @@ export const useWallets = () => {
 
   // Select wallet
   const selectWallet = useCallback((wallet: Wallet | null) => {
-    setState(prev => ({ ...prev, selectedWallet: wallet }));
+    setState((prev) => ({ ...prev, selectedWallet: wallet }));
   }, []);
 
   // Initialize - fetch wallets on mount
@@ -96,20 +98,23 @@ export const useWalletDetails = (publicKey: string | null) => {
 
   // Fetch wallet details
   const fetchWalletDetails = useCallback(async (walletPublicKey: string) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const response = await api.getWallet(walletPublicKey);
-      setState(prev => ({ 
-        ...prev, 
-        wallet: response.wallet, 
-        loading: false 
+      setState((prev) => ({
+        ...prev,
+        wallet: response.wallet,
+        loading: false,
       }));
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch wallet details'
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch wallet details",
       }));
     }
   }, []);

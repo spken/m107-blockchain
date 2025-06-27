@@ -21,7 +21,7 @@ class Certificate {
     grade = null,
     credentialLevel,
     expirationDate = null,
-    metadata = {}
+    metadata = {},
   }) {
     this.id = id || uuidv4();
     this.recipientName = recipientName;
@@ -58,7 +58,7 @@ class Certificate {
       grade: this.grade,
       credentialLevel: this.credentialLevel,
       expirationDate: this.expirationDate,
-      metadata: this.metadata
+      metadata: this.metadata,
     };
 
     return crypto
@@ -78,7 +78,7 @@ class Certificate {
     // Verify the private key matches the institution's public key
     const keyPair = ec.keyFromPrivate(institutionPrivateKey);
     const publicKeyFromPrivate = keyPair.getPublic("hex");
-    
+
     if (publicKeyFromPrivate !== this.institutionPublicKey) {
       throw new Error("Private key does not match institution's public key");
     }
@@ -122,7 +122,7 @@ class Certificate {
     if (this.isExpired()) {
       return "EXPIRED";
     }
-    
+
     try {
       return this.isValid() ? "VALID" : "INVALID";
     } catch (error) {
@@ -151,8 +151,8 @@ class Certificate {
         expirationDate: this.expirationDate,
         metadata: this.metadata,
         hash: this.hash,
-        signature: this.signature
-      }
+        signature: this.signature,
+      },
     };
   }
 
@@ -188,11 +188,24 @@ class Certificate {
       errors.push("Institution name must be at least 2 characters long");
     }
 
-    if (!this.institutionPublicKey || this.institutionPublicKey.length !== 130) {
+    if (
+      !this.institutionPublicKey ||
+      this.institutionPublicKey.length !== 130
+    ) {
       errors.push("Invalid institution public key format");
     }
 
-    if (!this.certificateType || !["BACHELOR", "MASTER", "PHD", "DIPLOMA", "CERTIFICATION", "PROFESSIONAL"].includes(this.certificateType)) {
+    if (
+      !this.certificateType ||
+      ![
+        "BACHELOR",
+        "MASTER",
+        "PHD",
+        "DIPLOMA",
+        "CERTIFICATION",
+        "PROFESSIONAL",
+      ].includes(this.certificateType)
+    ) {
       errors.push("Invalid certificate type");
     }
 

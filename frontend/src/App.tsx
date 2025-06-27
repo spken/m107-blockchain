@@ -3,7 +3,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import CertificateDashboard from "@/components/certificates/CertificateDashboard";
 import CertificateIssuanceForm from "@/components/certificates/CertificateIssuanceForm";
@@ -19,7 +25,12 @@ import {
   useConnectionStatus,
   useNetwork,
 } from "@/hooks/useBlockchain";
-import { useCertificates, useCertificateIssuance, useCertificateVerification, usePendingTransactions } from "@/hooks/useCertificates";
+import {
+  useCertificates,
+  useCertificateIssuance,
+  useCertificateVerification,
+  usePendingTransactions,
+} from "@/hooks/useCertificates";
 import type { Certificate, CertificateFormData } from "@/types/certificates";
 import {
   Award,
@@ -37,22 +48,28 @@ import {
 
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [selectedCertificate, setSelectedCertificate] =
+    useState<Certificate | null>(null);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [isAutoInitializing, setIsAutoInitializing] = useState(false);
-  
+
   // Blockchain and network state
   const {
     blocks,
     loading: blocksLoading,
     refetch: refetchBlocks,
   } = useBlocks();
-  
+
   const { runConsensus } = useConsensus();
   const connectionStatus = useConnectionStatus();
-  const { isConnected, isChecking, error: connectionError, retry: retryConnection } = connectionStatus;
+  const {
+    isConnected,
+    isChecking,
+    error: connectionError,
+    retry: retryConnection,
+  } = connectionStatus;
   const { institution } = useInstitution();
-  
+
   // Network management for auto-initialization
   const {
     networkStatus,
@@ -61,7 +78,7 @@ function App() {
     loading: networkLoading,
     refresh: refreshNetworkData,
   } = useNetwork();
-  
+
   // Certificate state
   const {
     certificates,
@@ -71,12 +88,12 @@ function App() {
   } = useCertificates();
 
   // Certificate issuance
-  const { 
-    issueCertificate, 
-    loading: issuingCertificate, 
-    error: issuanceError, 
+  const {
+    issueCertificate,
+    loading: issuingCertificate,
+    error: issuanceError,
     success: issuanceSuccess,
-    clearStatus: clearIssuanceStatus 
+    clearStatus: clearIssuanceStatus,
   } = useCertificateIssuance();
 
   // Pending transactions (mempool)
@@ -93,14 +110,15 @@ function App() {
       }
 
       try {
-        console.log("Connection established, checking if network needs initialization...");
+        console.log(
+          "Connection established, checking if network needs initialization...",
+        );
         setIsAutoInitializing(true);
-        
+
         // First, refresh network data to get current status
         await refreshNetworkData();
-        
+
         // Wait a moment for the data to be updated - we'll check in the next effect cycle
-        
       } catch (error) {
         console.log("Error refreshing network data:", error);
         setIsAutoInitializing(false);
@@ -128,13 +146,19 @@ function App() {
 
       try {
         // Check if network needs initialization (multiple indicators)
-        const hasNoNetworkNodes = !networkStatus?.networkNodes || networkStatus.networkNodes.length === 0;
+        const hasNoNetworkNodes =
+          !networkStatus?.networkNodes ||
+          networkStatus.networkNodes.length === 0;
         const hasNoInstitution = !networkStatus?.institution;
         const hasNoInstitutions = institutions.length === 0;
         const hasOnlyGenesisBlock = !blocks || blocks.length <= 1;
-        
-        const needsInit = !networkStatus || hasNoNetworkNodes || hasNoInstitution || (hasNoInstitutions && hasOnlyGenesisBlock);
-        
+
+        const needsInit =
+          !networkStatus ||
+          hasNoNetworkNodes ||
+          hasNoInstitution ||
+          (hasNoInstitutions && hasOnlyGenesisBlock);
+
         console.log("Network initialization check:", {
           needsInit,
           hasNetworkStatus: !!networkStatus,
@@ -146,12 +170,14 @@ function App() {
             hasNoNetworkNodes,
             hasNoInstitution,
             hasNoInstitutions,
-            hasOnlyGenesisBlock
-          }
+            hasOnlyGenesisBlock,
+          },
         });
 
         if (needsInit) {
-          console.log("Network appears uninitialized, attempting automatic initialization...");
+          console.log(
+            "Network appears uninitialized, attempting automatic initialization...",
+          );
           const success = await initializeNetwork();
           if (success) {
             console.log("Network automatically initialized successfully");
@@ -162,7 +188,9 @@ function App() {
             console.log("Automatic network initialization failed");
           }
         } else {
-          console.log("Network appears to be already initialized, skipping auto-init");
+          console.log(
+            "Network appears to be already initialized, skipping auto-init",
+          );
         }
       } catch (error) {
         console.log("Error during automatic network initialization:", error);
@@ -175,7 +203,17 @@ function App() {
     if (isAutoInitializing && !networkLoading) {
       checkAndInitialize();
     }
-  }, [isAutoInitializing, networkLoading, networkStatus, institutions, blocks, isConnected, initializeNetwork, refetchBlocks, refreshCertificates]);
+  }, [
+    isAutoInitializing,
+    networkLoading,
+    networkStatus,
+    institutions,
+    blocks,
+    isConnected,
+    initializeNetwork,
+    refetchBlocks,
+    refreshCertificates,
+  ]);
 
   // Periodic consensus to keep the blockchain synchronized (only when connected)
   useEffect(() => {
@@ -222,21 +260,25 @@ function App() {
   };
 
   const handleCertificateIssue = async (data: CertificateFormData) => {
-    console.log('Attempting to issue certificate with data:', data);
+    console.log("Attempting to issue certificate with data:", data);
     try {
       const result = await issueCertificate(data);
-      console.log('Certificate issuance result:', result);
+      console.log("Certificate issuance result:", result);
       if (result) {
-        console.log('Certificate issued successfully, redirecting to mempool...');
+        console.log(
+          "Certificate issued successfully, redirecting to mempool...",
+        );
         // Switch to mempool to show the new pending transaction
         setActiveTab("mempool");
         await refreshCertificates();
-        console.log('Data refreshed, new transaction should be visible in mempool');
+        console.log(
+          "Data refreshed, new transaction should be visible in mempool",
+        );
       } else {
-        console.error('Certificate issuance failed - no result returned');
+        console.error("Certificate issuance failed - no result returned");
       }
     } catch (error) {
-      console.error('Failed to issue certificate:', error);
+      console.error("Failed to issue certificate:", error);
       // TODO: Show error message to user
     }
   };
@@ -245,8 +287,13 @@ function App() {
     searchCertificates({ q: query });
   };
 
-  const { verifyCertificate, verification, loading: verificationLoading, error: verificationError } = useCertificateVerification();
-  const [verifyingId, setVerifyingId] = useState('');
+  const {
+    verifyCertificate,
+    verification,
+    loading: verificationLoading,
+    error: verificationError,
+  } = useCertificateVerification();
+  const [verifyingId, setVerifyingId] = useState("");
 
   const handleVerifyCertificate = async (certificateId: string) => {
     if (!certificateId.trim()) return;
@@ -270,9 +317,7 @@ function App() {
                 <Award className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  CertiChain
-                </h1>
+                <h1 className="text-xl font-bold text-gray-900">CertiChain</h1>
                 <p className="text-sm text-gray-500">
                   Decentralized Educational Certificate Management
                 </p>
@@ -283,12 +328,15 @@ function App() {
               {institution && (
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-blue-600" />
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200"
+                  >
                     {institution.name}
                   </Badge>
                 </div>
               )}
-              
+
               {/* Network Status */}
               <div className="flex items-center gap-3">
                 <div
@@ -311,7 +359,10 @@ function App() {
                           : "Network Offline, run backend?"}
                   </span>
                   {connectionError && !isConnected && (
-                    <span className="text-xs text-red-500 max-w-xs truncate" title={connectionError}>
+                    <span
+                      className="text-xs text-red-500 max-w-xs truncate"
+                      title={connectionError}
+                    >
                       {connectionError}
                     </span>
                   )}
@@ -349,9 +400,7 @@ function App() {
                   <h3 className="text-sm font-medium text-red-800">
                     Network Connection Error
                   </h3>
-                  <p className="text-sm text-red-700 mt-1">
-                    {connectionError}
-                  </p>
+                  <p className="text-sm text-red-700 mt-1">{connectionError}</p>
                 </div>
               </div>
               <Button
@@ -391,302 +440,342 @@ function App() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7 mb-8">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </TabsTrigger>
-            <TabsTrigger value="issue" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Issue Certificate</span>
-            </TabsTrigger>
-            <TabsTrigger value="verify" className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">Verify Certificate</span>
-            </TabsTrigger>
-            <TabsTrigger value="wallets" className="flex items-center gap-2">
-              <Award className="w-4 h-4" />
-              <span className="hidden sm:inline">Wallets</span>
-            </TabsTrigger>
-            <TabsTrigger value="mempool" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span className="hidden sm:inline">Mempool</span>
-              {pendingTransactions.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 px-1.5 py-0.5 text-xs bg-orange-100 text-orange-800"
-                >
-                  {pendingTransactions.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="blockchain" className="flex items-center gap-2">
-              <Blocks className="w-4 h-4" />
-              <span className="hidden sm:inline">Blockchain</span>
-              {blocks.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800"
-                >
-                  {blocks.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="network" className="flex items-center gap-2">
-              <Network className="w-4 h-4" />
-              <span className="hidden sm:inline">Network</span>
-            </TabsTrigger>
-          </TabsList>
+            <TabsList className="grid w-full grid-cols-7 mb-8">
+              <TabsTrigger
+                value="dashboard"
+                className="flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </TabsTrigger>
+              <TabsTrigger value="issue" className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Issue Certificate</span>
+              </TabsTrigger>
+              <TabsTrigger value="verify" className="flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                <span className="hidden sm:inline">Verify Certificate</span>
+              </TabsTrigger>
+              <TabsTrigger value="wallets" className="flex items-center gap-2">
+                <Award className="w-4 h-4" />
+                <span className="hidden sm:inline">Wallets</span>
+              </TabsTrigger>
+              <TabsTrigger value="mempool" className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span className="hidden sm:inline">Mempool</span>
+                {pendingTransactions.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 px-1.5 py-0.5 text-xs bg-orange-100 text-orange-800"
+                  >
+                    {pendingTransactions.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="blockchain"
+                className="flex items-center gap-2"
+              >
+                <Blocks className="w-4 h-4" />
+                <span className="hidden sm:inline">Blockchain</span>
+                {blocks.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800"
+                  >
+                    {blocks.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="network" className="flex items-center gap-2">
+                <Network className="w-4 h-4" />
+                <span className="hidden sm:inline">Network</span>
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Dashboard Tab */}
+            <TabsContent value="dashboard" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Certificate Dashboard
+                  </h2>
+                  <p className="text-gray-600">
+                    Manage and view all certificates in the network
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refreshCertificates}
+                  disabled={certificatesLoading}
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 mr-2 ${certificatesLoading ? "animate-spin" : ""}`}
+                  />
+                  Refresh
+                </Button>
+              </div>
+
+              <ErrorBoundary>
+                <CertificateDashboard
+                  certificates={certificates}
+                  loading={certificatesLoading}
+                  onSearch={handleSearch}
+                  onViewCertificate={handleViewCertificate}
+                  onVerifyCertificate={handleVerifyCertificate}
+                />
+              </ErrorBoundary>
+            </TabsContent>
+
+            {/* Issue Certificate Tab */}
+            <TabsContent value="issue" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Certificate Dashboard
+                  Issue New Certificate
                 </h2>
                 <p className="text-gray-600">
-                  Manage and view all certificates in the network
+                  Create and issue a new educational certificate
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshCertificates}
-                disabled={certificatesLoading}
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${certificatesLoading ? "animate-spin" : ""}`}
+              <ErrorBoundary>
+                <CertificateIssuanceForm
+                  onSubmit={handleCertificateIssue}
+                  loading={issuingCertificate}
                 />
-                Refresh
-              </Button>
-            </div>
-            
-            <ErrorBoundary>
-              <CertificateDashboard 
-                certificates={certificates}
-                loading={certificatesLoading}
-                onSearch={handleSearch}
-                onViewCertificate={handleViewCertificate}
-                onVerifyCertificate={handleVerifyCertificate}
-              />
-            </ErrorBoundary>
-          </TabsContent>
-
-          {/* Issue Certificate Tab */}
-          <TabsContent value="issue" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Issue New Certificate
-              </h2>
-              <p className="text-gray-600">
-                Create and issue a new educational certificate
-              </p>
-            </div>
-            <ErrorBoundary>
-              <CertificateIssuanceForm 
-                onSubmit={handleCertificateIssue}
-                loading={issuingCertificate}
-              />
-              {issuanceError && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800 text-sm">
-                    <strong>Error:</strong> {issuanceError}
-                  </p>
-                </div>
-              )}
-              {issuanceSuccess && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 text-sm">
-                    <strong>Success:</strong> Certificate issued successfully!
-                  </p>
-                </div>
-              )}
-            </ErrorBoundary>
-          </TabsContent>
-
-          {/* Verify Certificate Tab */}
-          <TabsContent value="verify" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Verify Certificate
-              </h2>
-              <p className="text-gray-600">
-                Enter a certificate ID to verify its authenticity and status
-              </p>
-            </div>
-            <ErrorBoundary>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
-                    Certificate Verification
-                  </CardTitle>
-                  <CardDescription>
-                    Enter the certificate ID to check its validity and status
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter certificate ID (e.g., cert_1234567890)"
-                      value={verifyingId}
-                      onChange={(e) => setVerifyingId(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={() => handleVerifyCertificate(verifyingId)}
-                      disabled={verificationLoading || !verifyingId.trim()}
-                      className="px-6"
-                    >
-                      {verificationLoading ? 'Verifying...' : 'Verify'}
-                    </Button>
+                {issuanceError && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-800 text-sm">
+                      <strong>Error:</strong> {issuanceError}
+                    </p>
                   </div>
-                  
-                  {verificationError && (
-                    <div className="mt-6">
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <div className="flex items-center gap-2 text-red-800">
-                          <XCircle className="w-5 h-5" />
-                          <span className="font-medium">Verification Failed</span>
-                        </div>
-                        <p className="text-red-700 mt-1">{verificationError}</p>
-                      </div>
+                )}
+                {issuanceSuccess && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-800 text-sm">
+                      <strong>Success:</strong> Certificate issued successfully!
+                    </p>
+                  </div>
+                )}
+              </ErrorBoundary>
+            </TabsContent>
+
+            {/* Verify Certificate Tab */}
+            <TabsContent value="verify" className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Verify Certificate
+                </h2>
+                <p className="text-gray-600">
+                  Enter a certificate ID to verify its authenticity and status
+                </p>
+              </div>
+              <ErrorBoundary>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      Certificate Verification
+                    </CardTitle>
+                    <CardDescription>
+                      Enter the certificate ID to check its validity and status
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter certificate ID (e.g., cert_1234567890)"
+                        value={verifyingId}
+                        onChange={(e) => setVerifyingId(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={() => handleVerifyCertificate(verifyingId)}
+                        disabled={verificationLoading || !verifyingId.trim()}
+                        className="px-6"
+                      >
+                        {verificationLoading ? "Verifying..." : "Verify"}
+                      </Button>
                     </div>
-                  )}
-                  
-                  {verification && (
-                    <div className="mt-6">
-                      <div className={`border rounded-lg p-4 ${
-                        verification.valid 
-                          ? 'bg-green-50 border-green-200' 
-                          : 'bg-red-50 border-red-200'
-                      }`}>
-                        <div className={`flex items-center gap-2 ${
-                          verification.valid ? 'text-green-800' : 'text-red-800'
-                        }`}>
-                          {verification.valid ? (
-                            <CheckCircle className="w-5 h-5" />
-                          ) : (
+
+                    {verificationError && (
+                      <div className="mt-6">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 text-red-800">
                             <XCircle className="w-5 h-5" />
-                          )}
-                          <span className="font-medium">
-                            {verification.valid ? 'Certificate Valid' : 'Certificate Invalid'}
-                          </span>
+                            <span className="font-medium">
+                              Verification Failed
+                            </span>
+                          </div>
+                          <p className="text-red-700 mt-1">
+                            {verificationError}
+                          </p>
                         </div>
-                        <p className={`mt-1 ${
-                          verification.valid ? 'text-green-700' : 'text-red-700'
-                        }`}>
-                          {verification.message || 'Verification completed'}
-                        </p>
-                        
-                        {verification.certificate && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <h4 className="font-medium text-gray-900 mb-2">Certificate Details</h4>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">Recipient:</span>
-                                <div className="font-medium">{verification.certificate.recipientName}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Institution:</span>
-                                <div className="font-medium">{verification.certificate.institutionName}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Course:</span>
-                                <div className="font-medium">{verification.certificate.courseName}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Issue Date:</span>
-                                <div className="font-medium">
-                                  {new Date(verification.certificate.issueDate).toLocaleDateString()}
+                      </div>
+                    )}
+
+                    {verification && (
+                      <div className="mt-6">
+                        <div
+                          className={`border rounded-lg p-4 ${
+                            verification.valid
+                              ? "bg-green-50 border-green-200"
+                              : "bg-red-50 border-red-200"
+                          }`}
+                        >
+                          <div
+                            className={`flex items-center gap-2 ${
+                              verification.valid
+                                ? "text-green-800"
+                                : "text-red-800"
+                            }`}
+                          >
+                            {verification.valid ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <XCircle className="w-5 h-5" />
+                            )}
+                            <span className="font-medium">
+                              {verification.valid
+                                ? "Certificate Valid"
+                                : "Certificate Invalid"}
+                            </span>
+                          </div>
+                          <p
+                            className={`mt-1 ${
+                              verification.valid
+                                ? "text-green-700"
+                                : "text-red-700"
+                            }`}
+                          >
+                            {verification.message || "Verification completed"}
+                          </p>
+
+                          {verification.certificate && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <h4 className="font-medium text-gray-900 mb-2">
+                                Certificate Details
+                              </h4>
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-gray-600">
+                                    Recipient:
+                                  </span>
+                                  <div className="font-medium">
+                                    {verification.certificate.recipientName}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">
+                                    Institution:
+                                  </span>
+                                  <div className="font-medium">
+                                    {verification.certificate.institutionName}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Course:</span>
+                                  <div className="font-medium">
+                                    {verification.certificate.courseName}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">
+                                    Issue Date:
+                                  </span>
+                                  <div className="font-medium">
+                                    {new Date(
+                                      verification.certificate.issueDate,
+                                    ).toLocaleDateString()}
+                                  </div>
                                 </div>
                               </div>
+                              <Button
+                                className="mt-3"
+                                variant="outline"
+                                onClick={() => {
+                                  if (verification.certificate) {
+                                    setSelectedCertificate(
+                                      verification.certificate,
+                                    );
+                                    setActiveTab("dashboard");
+                                  }
+                                }}
+                              >
+                                View Full Details
+                              </Button>
                             </div>
-                            <Button 
-                              className="mt-3"
-                              variant="outline"
-                              onClick={() => {
-                                if (verification.certificate) {
-                                  setSelectedCertificate(verification.certificate);
-                                  setActiveTab('dashboard');
-                                }
-                              }}
-                            >
-                              View Full Details
-                            </Button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </ErrorBoundary>
-          </TabsContent>
+                    )}
+                  </CardContent>
+                </Card>
+              </ErrorBoundary>
+            </TabsContent>
 
-          {/* Wallets Tab */}
-          <TabsContent value="wallets" className="space-y-6">
-            <ErrorBoundary>
-              <WalletManager 
-                onSelectCertificate={(certificate) => {
-                  setSelectedCertificate(certificate);
-                  setShowCertificateModal(true);
-                }}
-              />
-            </ErrorBoundary>
-          </TabsContent>
+            {/* Wallets Tab */}
+            <TabsContent value="wallets" className="space-y-6">
+              <ErrorBoundary>
+                <WalletManager
+                  onSelectCertificate={(certificate) => {
+                    setSelectedCertificate(certificate);
+                    setShowCertificateModal(true);
+                  }}
+                />
+              </ErrorBoundary>
+            </TabsContent>
 
-          {/* Mempool Tab */}
-          <TabsContent value="mempool" className="space-y-6">
-            <ErrorBoundary>
-              <MempoolViewer />
-            </ErrorBoundary>
-          </TabsContent>
+            {/* Mempool Tab */}
+            <TabsContent value="mempool" className="space-y-6">
+              <ErrorBoundary>
+                <MempoolViewer />
+              </ErrorBoundary>
+            </TabsContent>
 
-          {/* Blockchain Tab */}
-          <TabsContent value="blockchain" className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Blockchain Tab */}
+            <TabsContent value="blockchain" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Blockchain Overview
+                  </h2>
+                  <p className="text-gray-600">
+                    View blockchain structure and network consensus
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refetchBlocks}
+                  disabled={blocksLoading}
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 mr-2 ${blocksLoading ? "animate-spin" : ""}`}
+                  />
+                  Refresh
+                </Button>
+              </div>
+              <ErrorBoundary>
+                <BlockchainOverview />
+              </ErrorBoundary>
+            </TabsContent>
+
+            {/* Network Tab */}
+            <TabsContent value="network" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Blockchain Overview
+                  Network Management
                 </h2>
                 <p className="text-gray-600">
-                  View blockchain structure and network consensus
+                  Manage network connections and institution registry
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refetchBlocks}
-                disabled={blocksLoading}
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${blocksLoading ? "animate-spin" : ""}`}
-                />
-                Refresh
-              </Button>
-            </div>
-            <ErrorBoundary>
-              <BlockchainOverview />
-            </ErrorBoundary>
-          </TabsContent>
-
-          {/* Network Tab */}
-          <TabsContent value="network" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Network Management
-              </h2>
-              <p className="text-gray-600">
-                Manage network connections and institution registry
-              </p>
-            </div>
-            <ErrorBoundary>
-              <NetworkManager />
-            </ErrorBoundary>
-          </TabsContent>
-        </Tabs>
+              <ErrorBoundary>
+                <NetworkManager />
+              </ErrorBoundary>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
@@ -707,7 +796,7 @@ function App() {
                   ×
                 </Button>
               </div>
-              <CertificateViewer 
+              <CertificateViewer
                 certificate={selectedCertificate}
                 verification={verification || undefined}
                 onVerify={handleVerifySelectedCertificate}
@@ -723,9 +812,7 @@ function App() {
       <footer className="bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-500 text-sm">
-            <p>
-              © 2025 CertiChain. All rights reserved.
-            </p>
+            <p>© 2025 CertiChain. All rights reserved.</p>
             <p className="mt-2">
               Connected to certificate network on{" "}
               <code className="bg-gray-100 px-2 py-1 rounded text-xs">

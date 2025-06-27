@@ -7,17 +7,20 @@ This is a specialized blockchain system designed specifically for managing educa
 ## Key Features
 
 ### 🎓 Certificate Management
+
 - **Certificate Issuance**: Authorized institutions can issue digital certificates
 - **Certificate Verification**: Real-time verification of certificate authenticity
 - **Certificate Revocation**: Institutions can revoke certificates when necessary
 - **Certificate Ownership**: Track certificate ownership via wallet addresses
 
 ### 🏛️ Institution Management
+
 - **Proof of Authority**: Only authorized institutions can process transactions
 - **Multi-Institution Network**: Support for universities, vocational schools, and certification providers
 - **Institution Registry**: Centralized registry of authorized educational institutions
 
 ### 🔒 Security & Trust
+
 - **Digital Signatures**: All certificates are cryptographically signed
 - **Immutable Records**: Certificate data cannot be altered once recorded
 - **Decentralized Verification**: No single point of failure
@@ -42,6 +45,7 @@ This is a specialized blockchain system designed specifically for managing educa
 ### Deprecated Components
 
 The following files are deprecated and should not be used:
+
 - `Blockchain.js` - Generic blockchain with currency features
 - `Transaction.js` - Generic transaction with amounts/fees
 - `networkNode.js` - General purpose node with balance tracking
@@ -57,11 +61,13 @@ npm install
 ### Running the Network
 
 Start all three institution nodes:
+
 ```bash
 npm run nodes
 ```
 
 Or start individual nodes:
+
 ```bash
 # University Node (Port 3001)
 npm run university
@@ -86,6 +92,7 @@ npm run test:api
 ## API Endpoints
 
 ### Certificate Operations
+
 - `POST /certificates` - Issue a new certificate
 - `GET /certificates/:id` - Get certificate by ID
 - `POST /certificates/:id/verify` - Verify a certificate
@@ -93,6 +100,7 @@ npm run test:api
 - `GET /certificates` - Search certificates
 
 ### Blockchain Operations
+
 - `GET /blockchain` - Get entire blockchain
 - `GET /blocks` - Get all blocks
 - `GET /statistics` - Get blockchain statistics
@@ -100,16 +108,19 @@ npm run test:api
 - `GET /validate` - Validate blockchain
 
 ### Institution Management
+
 - `GET /institutions` - Get all institutions
 - `GET /institution` - Get current node's institution
 
 ### Wallet Operations
+
 - `POST /wallets` - Create new wallet
 - `GET /wallets` - Get all wallets
 - `GET /wallets/:publicKey` - Get wallet details
 - `GET /wallets/:publicKey/certificates` - Get wallet's certificates
 
 ### Network Management
+
 - `GET /network` - Get network status
 - `POST /initialize-network` - Initialize complete network
 - `GET /consensus` - Run consensus algorithm
@@ -117,11 +128,13 @@ npm run test:api
 ## Configuration
 
 ### Institution Types
+
 - `UNIVERSITY`: Traditional universities
 - `VOCATIONAL_SCHOOL`: Vocational and technical schools
 - `CERTIFICATION_PROVIDER`: Professional certification organizations
 
 ### Network Ports
+
 - Port 3001: University of Technology
 - Port 3002: Professional Vocational School
 - Port 3003: Global Certification Provider
@@ -131,12 +144,14 @@ npm run test:api
 This blockchain system is **NOT** a cryptocurrency and deliberately excludes:
 
 ❌ **No Currency Features**:
+
 - No coin/token balances
 - No transaction fees
 - No mining rewards
 - No wallet balances
 
 ✅ **Certificate-Focused Features**:
+
 - Certificate ownership tracking
 - Institution authorization
 - Document verification

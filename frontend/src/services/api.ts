@@ -60,10 +60,15 @@ class BlockchainAPI {
       return response.json();
     } catch (error) {
       // Enhanced error handling for network issues
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        throw new Error('ERR_CONNECTION_REFUSED: Cannot connect to backend server');
-      } else if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout: Backend server is not responding');
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "ERR_CONNECTION_REFUSED: Cannot connect to backend server",
+        );
+      } else if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("Request timeout: Backend server is not responding");
       } else {
         throw error;
       }

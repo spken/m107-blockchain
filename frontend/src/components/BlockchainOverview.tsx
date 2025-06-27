@@ -21,20 +21,25 @@ export function BlockchainOverview() {
   } | null>(null);
 
   try {
-
     const handleValidate = async () => {
       try {
         setValidating(true);
         // Simple validation based on blocks
-        const isValid = blocks.length > 0 && blocks.every(block => block.hash && block.previousHash !== undefined);
+        const isValid =
+          blocks.length > 0 &&
+          blocks.every(
+            (block) => block.hash && block.previousHash !== undefined,
+          );
         setValidationResult({
           isValid,
-          message: isValid ? "Blockchain is valid" : "Blockchain validation failed"
+          message: isValid
+            ? "Blockchain is valid"
+            : "Blockchain validation failed",
         });
       } catch (err) {
         setValidationResult({
           isValid: false,
-          message: "Validation error occurred"
+          message: "Validation error occurred",
         });
       } finally {
         setValidating(false);
@@ -46,20 +51,12 @@ export function BlockchainOverview() {
     }
 
     if (error) {
-      return (
-        <ErrorFallback
-          error={error}
-          onRetry={refresh}
-        />
-      );
+      return <ErrorFallback error={error} onRetry={refresh} />;
     }
 
     if (!blocks || !Array.isArray(blocks)) {
       return (
-        <ErrorFallback
-          error="No blockchain data available"
-          onRetry={refresh}
-        />
+        <ErrorFallback error="No blockchain data available" onRetry={refresh} />
       );
     }
 
@@ -97,7 +94,9 @@ export function BlockchainOverview() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Blocks</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Blocks
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{blocks.length}</div>
@@ -106,7 +105,9 @@ export function BlockchainOverview() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Mining Difficulty</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Mining Difficulty
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">2</div>
@@ -115,10 +116,14 @@ export function BlockchainOverview() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Certificates</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Certificates
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalCertificates || 0}</div>
+              <div className="text-2xl font-bold">
+                {stats?.totalCertificates || 0}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -151,15 +156,16 @@ export function BlockchainOverview() {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Timestamp:</span>
                     <span className="text-xs">
-                      {latestBlock.timestamp 
+                      {latestBlock.timestamp
                         ? new Date(latestBlock.timestamp).toLocaleString()
-                        : 'N/A'
-                      }
+                        : "N/A"}
                     </span>
                   </div>
                 </>
               ) : (
-                <div className="text-center text-gray-500">No blocks available</div>
+                <div className="text-center text-gray-500">
+                  No blocks available
+                </div>
               )}
             </CardContent>
           </Card>
@@ -173,7 +179,9 @@ export function BlockchainOverview() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Total Transactions:</span>
+                <span className="text-sm text-gray-600">
+                  Total Transactions:
+                </span>
                 <span>{totalTransactions}</span>
               </div>
               <div className="flex justify-between">
@@ -187,9 +195,7 @@ export function BlockchainOverview() {
                   ) : (
                     <AlertCircle className="w-4 h-4 text-red-600" />
                   )}
-                  <span className="text-sm">
-                    {validationResult.message}
-                  </span>
+                  <span className="text-sm">{validationResult.message}</span>
                 </div>
               )}
             </CardContent>
@@ -205,30 +211,34 @@ export function BlockchainOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {blocks.slice(-10).reverse().map((block: any, index: number) => (
-                <div
-                  key={block.hash || index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">#{block.index !== undefined ? block.index : 'N/A'}</Badge>
-                    <div>
-                      <div className="font-mono text-sm">
-                        {block.hash?.slice(0, 16)}...
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {block.transactions?.length || 0} transactions
+              {blocks
+                .slice(-10)
+                .reverse()
+                .map((block: any, index: number) => (
+                  <div
+                    key={block.hash || index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline">
+                        #{block.index !== undefined ? block.index : "N/A"}
+                      </Badge>
+                      <div>
+                        <div className="font-mono text-sm">
+                          {block.hash?.slice(0, 16)}...
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {block.transactions?.length || 0} transactions
+                        </div>
                       </div>
                     </div>
+                    <div className="text-xs text-gray-500">
+                      {block.timestamp
+                        ? new Date(block.timestamp).toLocaleDateString()
+                        : "N/A"}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {block.timestamp 
-                      ? new Date(block.timestamp).toLocaleDateString()
-                      : 'N/A'
-                    }
-                  </div>
-                </div>
-              ))}
+                ))}
               {blocks.length === 0 && (
                 <div className="text-center text-gray-500 py-4">
                   No blocks in the chain yet

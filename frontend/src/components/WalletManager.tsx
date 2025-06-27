@@ -1,37 +1,47 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { 
-  Wallet as WalletIcon, 
-  Plus, 
-  Copy, 
-  Eye, 
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  Wallet as WalletIcon,
+  Plus,
+  Copy,
+  Eye,
   History,
   Award,
   Calendar,
   ArrowUpRight,
   ArrowDownLeft,
-  Clock
-} from 'lucide-react';
-import type { Wallet, WalletDetails, Certificate, WalletTransaction } from '@/types/certificates';
-import { useWallets, useWalletDetails } from '@/hooks/useWallets';
-import { useCertificateHelpers } from '@/hooks/useCertificates';
+  Clock,
+} from "lucide-react";
+import type {
+  Wallet,
+  WalletDetails,
+  Certificate,
+  WalletTransaction,
+} from "@/types/certificates";
+import { useWallets, useWalletDetails } from "@/hooks/useWallets";
+import { useCertificateHelpers } from "@/hooks/useCertificates";
 
 interface WalletManagerProps {
   onSelectCertificate?: (certificate: Certificate) => void;
 }
 
-const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) => {
+const WalletManager: React.FC<WalletManagerProps> = ({
+  onSelectCertificate,
+}) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [newWalletLabel, setNewWalletLabel] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedWalletPublicKey, setSelectedWalletPublicKey] = useState<string | null>(null);
-  
+  const [selectedWalletPublicKey, setSelectedWalletPublicKey] = useState<
+    string | null
+  >(null);
+
   const { wallets, loading, error, createWallet, selectWallet } = useWallets();
-  const { wallet: selectedWalletDetails, loading: detailsLoading } = useWalletDetails(selectedWalletPublicKey);
+  const { wallet: selectedWalletDetails, loading: detailsLoading } =
+    useWalletDetails(selectedWalletPublicKey);
   const { formatDate, getTypeLabel } = useCertificateHelpers();
 
   const handleCreateWallet = async () => {
@@ -40,7 +50,7 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
       setNewWalletLabel("");
       setShowCreateForm(false);
     } catch (error) {
-      console.error('Failed to create wallet:', error);
+      console.error("Failed to create wallet:", error);
     }
   };
 
@@ -55,22 +65,24 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
       await navigator.clipboard.writeText(text);
       console.log(`${label} copied to clipboard`);
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+      console.error("Failed to copy to clipboard:", err);
     }
   };
 
   const getTransactionIcon = (transaction: WalletTransaction) => {
-    if (transaction.status === 'PENDING') {
+    if (transaction.status === "PENDING") {
       return <Clock className="h-4 w-4 text-orange-500" />;
     }
-    return transaction.type === 'SENT' 
-      ? <ArrowUpRight className="h-4 w-4 text-red-500" />
-      : <ArrowDownLeft className="h-4 w-4 text-green-500" />;
+    return transaction.type === "SENT" ? (
+      <ArrowUpRight className="h-4 w-4 text-red-500" />
+    ) : (
+      <ArrowDownLeft className="h-4 w-4 text-green-500" />
+    );
   };
 
   const getTransactionColor = (transaction: WalletTransaction) => {
-    if (transaction.status === 'PENDING') return 'text-orange-600';
-    return transaction.type === 'SENT' ? 'text-red-600' : 'text-green-600';
+    if (transaction.status === "PENDING") return "text-orange-600";
+    return transaction.type === "SENT" ? "text-red-600" : "text-green-600";
   };
 
   return (
@@ -85,8 +97,8 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
             Manage your wallets and certificates
           </p>
         </div>
-        
-        <Button 
+
+        <Button
           onClick={() => setShowCreateForm(true)}
           className="flex items-center gap-2"
         >
@@ -109,14 +121,11 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
                 onChange={(e) => setNewWalletLabel(e.target.value)}
                 className="flex-1"
               />
-              <Button 
-                onClick={handleCreateWallet}
-                disabled={loading}
-              >
-                {loading ? 'Creating...' : 'Create'}
+              <Button onClick={handleCreateWallet} disabled={loading}>
+                {loading ? "Creating..." : "Create"}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowCreateForm(false)}
               >
                 Cancel
@@ -161,8 +170,8 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {wallets.map((wallet) => (
-                <Card 
-                  key={wallet.id} 
+                <Card
+                  key={wallet.id}
                   className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => handleSelectWallet(wallet)}
                 >
@@ -182,14 +191,14 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
                           {wallet.certificateCount} certificates
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-500" />
                         <span className="text-sm text-gray-600">
                           Created {formatDate(wallet.created)}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 mt-2">
                         <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono truncate flex-1">
                           {wallet.publicKey}
@@ -199,7 +208,7 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            copyToClipboard(wallet.publicKey, 'Public Key');
+                            copyToClipboard(wallet.publicKey, "Public Key");
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -215,7 +224,7 @@ const WalletManager: React.FC<WalletManagerProps> = ({ onSelectCertificate }) =>
 
         <TabsContent value="details" className="space-y-6">
           {selectedWalletDetails ? (
-            <WalletDetailsView 
+            <WalletDetailsView
               wallet={selectedWalletDetails}
               loading={detailsLoading}
               onSelectCertificate={onSelectCertificate}
@@ -261,7 +270,7 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
   getTypeLabel,
   copyToClipboard,
   getTransactionIcon,
-  getTransactionColor
+  getTransactionColor,
 }) => {
   const [detailsTab, setDetailsTab] = useState("info");
 
@@ -282,14 +291,18 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
             <div className="flex items-center gap-3">
               <WalletIcon className="h-6 w-6" />
               <div>
-                <h2 className="text-xl">{wallet.label || 'Unnamed Wallet'}</h2>
+                <h2 className="text-xl">{wallet.label || "Unnamed Wallet"}</h2>
                 <p className="text-sm text-gray-600">
-                  {wallet.isInstitution ? 'Institution Wallet' : 'Individual Wallet'}
+                  {wallet.isInstitution
+                    ? "Institution Wallet"
+                    : "Individual Wallet"}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-blue-600">{wallet.certificateCount}</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {wallet.certificateCount}
+              </p>
               <p className="text-sm text-gray-600">certificates</p>
             </div>
           </CardTitle>
@@ -297,7 +310,9 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-600">Public Key</label>
+              <label className="text-sm font-medium text-gray-600">
+                Public Key
+              </label>
               <div className="flex items-center gap-2 mt-1">
                 <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all flex-1">
                   {wallet.publicKey}
@@ -305,14 +320,18 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => copyToClipboard(wallet.publicKey, 'Public Key')}
+                  onClick={() =>
+                    copyToClipboard(wallet.publicKey, "Public Key")
+                  }
                 >
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">Created</label>
+              <label className="text-sm font-medium text-gray-600">
+                Created
+              </label>
               <p className="text-sm mt-1">{formatDate(wallet.created)}</p>
             </div>
           </div>
@@ -322,8 +341,12 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
       {/* Wallet Details Tabs */}
       <Tabs value={detailsTab} onValueChange={setDetailsTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="certificates">Certificates ({wallet.certificates.length})</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions ({wallet.transactions.length})</TabsTrigger>
+          <TabsTrigger value="certificates">
+            Certificates ({wallet.certificates.length})
+          </TabsTrigger>
+          <TabsTrigger value="transactions">
+            Transactions ({wallet.transactions.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="certificates" className="space-y-4">
@@ -332,13 +355,15 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
               <CardContent className="pt-6 text-center">
                 <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No Certificates</h3>
-                <p className="text-gray-600">This wallet doesn't own any certificates yet.</p>
+                <p className="text-gray-600">
+                  This wallet doesn't own any certificates yet.
+                </p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {wallet.certificates.map((certificate) => (
-                <Card 
+                <Card
                   key={certificate.id}
                   className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => onSelectCertificate?.(certificate)}
@@ -346,8 +371,12 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold">{certificate.recipientName}</h3>
-                        <p className="text-gray-600">{certificate.courseName}</p>
+                        <h3 className="font-semibold">
+                          {certificate.recipientName}
+                        </h3>
+                        <p className="text-gray-600">
+                          {certificate.courseName}
+                        </p>
                         <div className="flex items-center gap-2 mt-2">
                           <Badge variant="secondary">
                             {getTypeLabel(certificate.certificateType)}
@@ -358,9 +387,13 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">{certificate.institutionName}</p>
+                        <p className="text-sm text-gray-600">
+                          {certificate.institutionName}
+                        </p>
                         {certificate.grade && (
-                          <p className="font-semibold text-blue-600">{certificate.grade}</p>
+                          <p className="font-semibold text-blue-600">
+                            {certificate.grade}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -377,7 +410,9 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
               <CardContent className="pt-6 text-center">
                 <History className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No Transactions</h3>
-                <p className="text-gray-600">This wallet has no transaction history yet.</p>
+                <p className="text-gray-600">
+                  This wallet has no transaction history yet.
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -390,25 +425,37 @@ const WalletDetailsView: React.FC<WalletDetailsViewProps> = ({
                         {getTransactionIcon(transaction)}
                         <div>
                           <p className="font-medium">
-                            {transaction.type === 'SENT' ? 'Sent' : 'Received'} Transaction
+                            {transaction.type === "SENT" ? "Sent" : "Received"}{" "}
+                            Transaction
                           </p>
                           <p className="text-sm text-gray-600">
-                            {transaction.type === 'SENT' ? 'To' : 'From'}: {' '}
+                            {transaction.type === "SENT" ? "To" : "From"}:{" "}
                             <code className="bg-gray-100 px-1 rounded text-xs">
-                              {transaction.type === 'SENT' ? transaction.toAddress : transaction.fromAddress}
+                              {transaction.type === "SENT"
+                                ? transaction.toAddress
+                                : transaction.fromAddress}
                             </code>
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-semibold ${getTransactionColor(transaction)}`}>
-                          {transaction.type === 'SENT' ? '-' : '+'}{transaction.amount} coins
+                        <p
+                          className={`font-semibold ${getTransactionColor(transaction)}`}
+                        >
+                          {transaction.type === "SENT" ? "-" : "+"}
+                          {transaction.amount} coins
                         </p>
                         <p className="text-sm text-gray-600">
                           {formatDate(transaction.timestamp)}
                         </p>
                         {transaction.status && (
-                          <Badge variant={transaction.status === 'PENDING' ? 'outline' : 'default'}>
+                          <Badge
+                            variant={
+                              transaction.status === "PENDING"
+                                ? "outline"
+                                : "default"
+                            }
+                          >
                             {transaction.status}
                           </Badge>
                         )}
