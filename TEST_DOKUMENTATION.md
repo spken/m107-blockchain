@@ -40,10 +40,10 @@
 
 | Test Suite | Tests | Status |
 |------------|-------|--------|
-| **Backend Integration** | 33/33 | ✅ PERFEKT |
+| **Backend Integration** | 34/34 | ✅ PERFEKT |
 | **Frontend Integration** | 41/41 | ✅ PERFEKT |
 | **End-to-End Tests** | 3/3 | ✅ PERFEKT |
-| **GESAMT** | **77/77** | **100%** |
+| **GESAMT** | **78/78** | **100%** |
 
 **Letzte Testausführung:** 27. Juni 2025, 14:27  
 **Node.js Version:** v20.17.0
@@ -77,7 +77,7 @@ cd frontend && npm run test:integration
 ## Backend Integration Tests
 
 **Datei:** `backend/src/test/IntegrationTest.js`  
-**Ergebnis:** 33/33 Tests bestanden
+**Ergebnis:** 34/34 Tests bestanden
 
 ### 1. Zertifikat-Ausstellung (Certificate Issuance)
 
