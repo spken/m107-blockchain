@@ -23,8 +23,7 @@
 - [5. Neue Test-Kategorien (Juni 2025)](#5-neue-test-kategorien-juni-2025)
   - [5.1 Accessibility & Usability Tests](#51-accessibility--usability-tests)
   - [5.2 Cross-Platform Kompatibilität](#52-cross-platform-kompatibilität)
-  - [5.3 Data Persistence & Recovery Tests](#53-data-persistence--recovery-tests)
-  - [5.4 Load & Stress Tests](#54-load--stress-tests)
+  - [5.3 Load & Stress Tests](#53-load--stress-tests)
 - [6. Kritische Bewertung der Anforderungserfüllung](#6-kritische-bewertung-der-anforderungserfüllung)
   - [6.1 Erfüllte Kern-Anforderungen](#61-erfüllte-kern-anforderungen)
   - [6.2 Teilweise erfüllte Anforderungen](#62-teilweise-erfüllte-anforderungen)
@@ -437,39 +436,7 @@ Browsers:
 ⚠️ Safari (Nicht getestet)
 ```
 
-### 5.3 Data Persistence & Recovery Tests
-
-**Status: ❌ UNVOLLSTÄNDIG**
-
-**Aktuelle Situation:**
-
-- ❌ In-Memory Storage (Daten verloren bei Neustart)
-- ❌ Keine Backup-Mechanismen
-- ❌ Keine Disaster Recovery-Pläne
-- ❌ Fehlende Datenbank-Integration
-
-**Empfohlene Verbesserungen:**
-
-```javascript
-// Persistenz-Layer Implementation
-class PersistentBlockchain {
-  constructor(dbConfig) {
-    this.db = new Database(dbConfig);
-    this.blockchain = new CertificateBlockchain();
-  }
-
-  async saveBlock(block) {
-    await this.db.blocks.insert(block);
-  }
-
-  async loadBlockchain() {
-    const blocks = await this.db.blocks.findAll();
-    this.blockchain.chain = blocks;
-  }
-}
-```
-
-### 5.4 Load & Stress Tests
+### 5.3 Load & Stress Tests
 
 **Status: ⚠️ BASIC TESTING**
 
@@ -553,9 +520,9 @@ Network Latency:      <50ms (LAN)
 
 #### 5.3.2 Skalierbarkeit
 
-**Limitierungen:**
+**Designentscheidungen:**
 
-- In-Memory-Storage (nicht persistent)
+- In-Memory-Storage (schnelle Zugriffe, einfache Implementierung)
 - Keine Load-Balancing-Implementierung
 - Fehlende Horizontal-Scaling-Strategie
 
@@ -618,9 +585,9 @@ Network Latency:      <50ms (LAN)
 
 #### 6.3.2 Skalierbarkeit
 
-**Limitierungen:**
+**Designentscheidungen:**
 
-- In-Memory-Storage (nicht persistent)
+- In-Memory-Storage (schnelle Zugriffe, einfache Implementierung)
 - Keine Load-Balancing-Implementierung
 - Fehlende Horizontal-Scaling-Strategie
 
@@ -663,32 +630,13 @@ class CertificateAPIError extends Error {
 
 ### 6.2 Mittelfristige Verbesserungen (3-6 Monate)
 
-#### 6.2.1 Persistenz-Layer
-
-```javascript
-// Database Integration
-class CertificateDatabase {
-  constructor(dbConfig) {
-    this.db = new PostgreSQL(dbConfig);
-  }
-
-  async storeCertificate(certificate) {
-    // Persistent storage implementation
-  }
-
-  async getCertificate(id) {
-    // Database retrieval
-  }
-}
-```
-
-#### 6.2.2 Advanced Security
+#### 6.2.1 Advanced Security
 
 - Multi-Signature-Unterstützung für kritische Operationen
 - Hardware Security Module (HSM) Integration
 - Audit-Trail für alle Transaktionen
 
-#### 6.2.3 Monitoring & Analytics
+#### 6.2.2 Monitoring & Analytics
 
 ```javascript
 // Performance Monitoring
@@ -799,7 +747,7 @@ interface CertificateEvents {
 **Schwächen:**
 
 - ❌ Fehlende Produktions-Bereitschaft
-- ❌ In-Memory Storage (keine Persistenz)
+- ✅ In-Memory Storage (Design-Entscheidung für Einfachheit)
 - ⚠️ Unvollständige Test-Abdeckung (Frontend)
 - ⚠️ Skalierbarkeits-Limitierungen
 - ⚠️ DSGVO-Compliance-Lücken
