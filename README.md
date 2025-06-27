@@ -2,30 +2,32 @@
 
 ## Dokumentationsübersicht
 
-### [`PROJEKTANALYSE.md`](./PROJEKTANALYSE.md)
-Dokumentation der gewählten Technologien und Implementierungsdetails des Webfrontends
-
 ### [`ANWENDUNGSHANDHABUNG.md`](./ANWENDUNGSHANDHABUNG.md)
-Beschreibung der Handhabung der Applikation (Startseite, Workflow)
+Benutzerhandbuch für die Applikation (Installation, Bedienung, Workflows, Beschreibung der Anwendung)
+
+### [`PROJEKTANALYSE.md`](./PROJEKTANALYSE.md)
+Technische Implementierung, Architektur und kritische Bewertung der Anforderungserfüllung
 
 ### [`TEST_DOKUMENTATION.md`](./TEST_DOKUMENTATION.md)
-Kritische Bewertung der Applikation und Erfüllung der Konzept-Anforderungen
+Umfassende Test-Suite-Doku mit Backend-, Frontend- und Integration-Tests (100% Pass-Rate)
 
-### [`INTEGRATION_TESTS.md`](./INTEGRATION_TESTS.md)
-Integrationstests des Zusammenspiels zwischen Blockchain und Webfrontend
+### [`KONZEPT.md (LB01)`](./KONZEPT.md)
+Konzeptionelle Grundlagen, Problemstellung und Blockchain-Architektur
 
-# Integrationstests zusammen ausführen
+## Tests ausführen
+
+### Alle Tests automatisch ausführen
 ```bash
 chmod +x run-all-tests.sh
 ./run-all-tests.sh
 ```
 
-## Backend Tests einzeln
+### Backend Tests einzeln
 ```bash
 cd backend && npm run test:integration
 ```
 
-## Frontend Tests einzeln
+### Frontend Tests einzeln
 ```bash
 cd frontend && npm run test:integration
 ```

@@ -28,7 +28,7 @@
 
 ## Übersicht
 
-**CertiChain** ist eine dezentrale Blockchain-Applikation zur Verwaltung von Bildungszertifikaten. Die Anwendung besteht aus einem **Backend** (Node.js Server auf Port 3001) und einem **Frontend** (React/Vite Webinterface).
+**CertiChain** ist eine dezentrale Blockchain-Applikation zur Verwaltung von Bildungszertifikaten. Die Anwendung besteht aus einem **Backend** (Node.js Server auf Port 3001 (Hauptsächlich) und einem Netzwerk von das aus Port 3001, 3002, 3003 besteht) und einem **Frontend** (React/Vite Webinterface).
 
 ## Anwendung starten
 
